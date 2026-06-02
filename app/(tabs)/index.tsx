@@ -164,7 +164,7 @@ export default function DashboardScreen() {
         {data?.isHidden && (
           <View style={styles.alertBanner}>
             <View style={styles.alertIconContainer}>
-              <FontAwesome name="exclamation-triangle" size={24} color="#fff" />
+              <FontAwesome name="exclamation-triangle" size={24} color={T.white} />
             </View>
             <View style={styles.alertTextContainer}>
               <Text style={styles.alertTitle}>Produits Invisibles</Text>
@@ -184,7 +184,7 @@ export default function DashboardScreen() {
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent', gap: 15 }}>
             <TouchableOpacity style={styles.notifBtn} onPress={() => setShowNotifications(true)}>
-              <FontAwesome name="bell" size={22} color="#fff" />
+              <FontAwesome name="bell" size={22} color={T.white} />
               {unreadCount > 0 && (
                 <View style={styles.notifBadge}>
                   <Text style={styles.notifBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -226,7 +226,7 @@ export default function DashboardScreen() {
             <View style={{ backgroundColor: 'transparent' }}>
               <Text style={styles.profitLabel}>Volume des Ventes</Text>
               <Text style={[styles.profitValue, { color: Colors.success }]}>{fmtInt(stats.orderCount)}</Text>
-              <Text style={[styles.profitSub, { color: '#94a3b8' }]}>Commandes traitées sur le marché</Text>
+              <Text style={[styles.profitSub, { color: T.textMuted }]}>Commandes traitées sur le marché</Text>
             </View>
             <FontAwesome name="line-chart" size={32} color={Colors.success} style={{ opacity: 0.5 }} />
           </View>
@@ -316,7 +316,7 @@ export default function DashboardScreen() {
                 <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>Notifications</Text>
                     <TouchableOpacity onPress={() => setShowNotifications(false)}>
-                        <FontAwesome name="times" size={20} color="#fff" />
+                        <FontAwesome name="times" size={20} color={T.white} />
                     </TouchableOpacity>
                 </View>
                 {unreadCount > 0 && (
@@ -327,7 +327,7 @@ export default function DashboardScreen() {
                 )}
                 <ScrollView contentContainerStyle={{ padding: 20 }}>
                     {notifications.length === 0 ? (
-                        <Text style={{color: '#94a3b8', textAlign: 'center', marginTop: 30}}>Aucune notification.</Text>
+                        <Text style={{color: T.textMuted, textAlign: 'center', marginTop: 30}}>Aucune notification.</Text>
                     ) : (
                         notifications.map((n, idx) => {
                             const isRead = readNotifIds.includes(n.id);
@@ -353,7 +353,7 @@ export default function DashboardScreen() {
                                         <FontAwesome name={n.type === 'STOCK' ? 'warning' : n.type === 'SUCCESS' ? 'check' : 'shopping-cart'} size={16} color={n.type === 'STOCK' ? '#ef4444' : n.type === 'SUCCESS' ? '#10b981' : '#3b82f6'} />
                                     </View>
                                     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                                        <Text style={[styles.notifTitle, !isRead && { fontWeight: '800', color: '#fff' }]}>{n.title}</Text>
+                                        <Text style={[styles.notifTitle, !isRead && { fontWeight: '800', color: T.text }]}>{n.title}</Text>
                                         <Text style={styles.notifMessage}>{n.message}</Text>
                                         <Text style={styles.notifDate}>{new Date(n.date).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</Text>
                                     </View>
