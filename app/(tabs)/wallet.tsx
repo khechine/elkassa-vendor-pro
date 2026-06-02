@@ -155,7 +155,7 @@ export default function WalletScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Nouveau Dépôt</Text>
               <TouchableOpacity onPress={() => setDepositModalOpen(false)}>
-                <FontAwesome name="close" size={24} color="#94a3b8" />
+                <FontAwesome name="close" size={24} color={T.textMuted} />
               </TouchableOpacity>
             </View>
 
@@ -179,7 +179,7 @@ export default function WalletScreen() {
                   </View>
                 ) : (
                   <View style={{ alignItems: 'center' }}>
-                    <FontAwesome name="camera" size={32} color="#94a3b8" />
+                    <FontAwesome name="camera" size={32} color={T.textMuted} />
                     <Text style={{ color: T.textMuted, marginTop: 10 }}>Sélectionner une image</Text>
                   </View>
                 )}
@@ -198,7 +198,7 @@ export default function WalletScreen() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={T.white} />
                 ) : (
                   <Text style={styles.submitBtnText}>Soumettre pour validation</Text>
                 )}
