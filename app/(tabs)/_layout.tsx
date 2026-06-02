@@ -4,7 +4,7 @@ import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useThemeContext } from '@/components/ThemeContext';
 import { AuthService } from '@/services/auth';
 
 function TabBarIcon(props: {
@@ -15,8 +15,7 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colorScheme, isDark } = useThemeContext();
   const insets = useSafeAreaInsets();
 
   return (

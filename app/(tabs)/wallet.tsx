@@ -6,8 +6,11 @@ import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
+import { useTheme, ThemeColors } from '@/components/useTheme';
 
 export default function WalletScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -172,12 +175,12 @@ export default function WalletScreen() {
                 {depositProof ? (
                   <View style={{ position: 'relative' }}>
                     <FontAwesome name="check-circle" size={48} color="#10b981" />
-                    <Text style={{ color: '#fff', marginTop: 10, fontSize: 12 }}>Preuve sélectionnée</Text>
+                    <Text style={{ color: T.white, marginTop: 10, fontSize: 12 }}>Preuve sélectionnée</Text>
                   </View>
                 ) : (
                   <View style={{ alignItems: 'center' }}>
                     <FontAwesome name="camera" size={32} color="#94a3b8" />
-                    <Text style={{ color: '#94a3b8', marginTop: 10 }}>Sélectionner une image</Text>
+                    <Text style={{ color: T.textMuted, marginTop: 10 }}>Sélectionner une image</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -208,20 +211,21 @@ export default function WalletScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0a0f1e',
+    backgroundColor: T.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0a0f1e',
+    backgroundColor: T.bg,
     padding: 20,
   },
   sectionTitle: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 22,
     fontWeight: '900',
     marginBottom: 20,
@@ -237,12 +241,12 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   glassCard: {
-    backgroundColor: 'rgba(16, 20, 35, 0.7)',
+    backgroundColor: T.glassCard,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: T.glassBorder,
   },
   balanceLabel: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
@@ -261,12 +265,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   withdrawBtnText: {
-    color: '#fff',
+    color: T.white,
     fontSize: 14,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 16,
     fontWeight: '800',
     marginBottom: 15,
@@ -286,12 +290,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   txTitle: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 14,
     fontWeight: '700',
   },
   txDate: {
-    color: '#64748b',
+    color: T.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
@@ -300,7 +304,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   emptyText: {
-    color: '#475569',
+    color: T.textDim,
     textAlign: 'center',
     marginTop: 40,
     fontSize: 14,
@@ -308,7 +312,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: T.modalOverlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -325,36 +329,36 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   modalTitle: {
-    color: '#fff',
+    color: T.white,
     fontSize: 20,
     fontWeight: '900',
   },
   inputLabel: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 13,
     fontWeight: '700',
     marginBottom: 10,
     marginTop: 15,
   },
   textInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: T.inputBg,
     borderRadius: 16,
     padding: 18,
-    color: '#fff',
+    color: T.text,
     fontSize: 18,
     fontWeight: '800',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: T.glassBorder,
   },
   imagePicker: {
     height: 150,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: T.glassBorder,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: T.sectionBg,
     marginTop: 5,
   },
   infoBox: {
@@ -386,9 +390,10 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   submitBtnText: {
-    color: '#fff',
+    color: T.white,
     fontSize: 16,
     fontWeight: '900',
   },
 });
+}
 

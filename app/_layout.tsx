@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthService } from '@/services/auth';
 import { AlertProvider } from '@/components/AlertContext';
+import { ThemeContextProvider, useThemeContext } from '@/components/ThemeContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -78,11 +79,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return <ThemeContextProvider><RootLayoutNav /></ThemeContextProvider>;
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useThemeContext();
 
   const CustomTheme = colorScheme === 'dark' ? {
     ...DarkTheme,

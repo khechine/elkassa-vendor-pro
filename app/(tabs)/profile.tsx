@@ -6,8 +6,13 @@ import { Text, View } from '@/components/Themed';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useTheme, ThemeColors } from '@/components/useTheme';
+import { useThemeContext } from '@/components/ThemeContext';
 
 export default function ProfileScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
+  const { toggleColorScheme, isDark } = useThemeContext();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -109,7 +114,7 @@ export default function ProfileScreen() {
             value={form.companyName} 
             onChangeText={(t) => setForm({...form, companyName: t})}
             placeholder="Ex: Café de Paris"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={T.textMuted}
           />
 
           <Text style={styles.label}>Description Marketplace</Text>
@@ -119,7 +124,7 @@ export default function ProfileScreen() {
             onChangeText={(t) => setForm({...form, description: t})}
             multiline
             placeholder="Décrivez votre activité..."
-            placeholderTextColor="#64748b"
+            placeholderTextColor={T.textMuted}
           />
         </View>
 
@@ -133,7 +138,7 @@ export default function ProfileScreen() {
             value={form.address} 
             onChangeText={(t) => setForm({...form, address: t})}
             placeholder="Ex: Rue 123, Tunis"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={T.textMuted}
           />
 
           <Text style={styles.label}>Téléphone de contact</Text>
@@ -142,7 +147,7 @@ export default function ProfileScreen() {
             value={form.phone} 
             onChangeText={(t) => setForm({...form, phone: t})}
             keyboardType="phone-pad"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={T.textMuted}
           />
 
           <View style={styles.row}>
@@ -172,6 +177,23 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Theme Toggle */}
+        <View style={[styles.card, styles.glassEffect]}>
+          <Text style={styles.cardHeader}>Affichage</Text>
+          <View style={[styles.row, { alignItems: 'center', justifyContent: 'space-between' }]}>
+            <View style={{ backgroundColor: 'transparent', flex: 1 }}>
+              <Text style={[styles.label, { marginBottom: 0 }]}>Mode sombre</Text>
+              <Text style={{ color: T.textMuted, fontSize: 12, marginTop: 2 }}>Activer/désactiver le thème sombre</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleColorScheme}
+              trackColor={{ false: '#767577', true: Colors.warning }}
+              thumbColor={isDark ? '#fff' : '#f4f3f4'}
+            />
+          </View>
+        </View>
+
         {/* Sectors */}
         <Text style={styles.sectionSubtitle}>Secteurs Marketplace</Text>
         <View style={styles.sectorsGrid}>
@@ -198,7 +220,7 @@ export default function ProfileScreen() {
           disabled={saving}
         >
           {saving 
-            ? <ActivityIndicator color="#fff" />
+            ? <ActivityIndicator color={T.white} />
             : <Text style={styles.saveBtnText}>Enregistrer les modifications</Text>
           }
         </TouchableOpacity>
@@ -209,16 +231,17 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0a0f1e',
+    backgroundColor: T.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0a0f1e',
+    backgroundColor: T.bg,
   },
   scrollBody: {
     padding: 20,
@@ -226,13 +249,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#ffffff',
+    color: T.text,
     marginBottom: 25,
   },
   sectionSubtitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#ffffff',
+    color: T.text,
     marginTop: 20,
     marginBottom: 15,
   },
@@ -242,9 +265,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   glassEffect: {
-    backgroundColor: 'rgba(16, 20, 35, 0.7)',
+    backgroundColor: T.glassCard,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: T.glassBorder,
   },
   cardHeader: {
     fontSize: 14,
@@ -257,17 +280,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: T.textMuted,
     marginBottom: 8,
     marginLeft: 4,
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.inputBg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: T.cardBorder,
     borderRadius: 12,
     padding: 15,
-    color: '#ffffff',
+    color: T.text,
     fontSize: 15,
     marginBottom: 15,
   },
@@ -298,16 +321,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: T.sectionBg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: T.glassBorder,
   },
   sectorItemActive: {
     backgroundColor: Colors.glass.orange,
     borderColor: Colors.warning,
   },
   sectorText: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -327,8 +350,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   saveBtnText: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 16,
     fontWeight: '900',
   },
 });
+}
