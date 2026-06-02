@@ -16,13 +16,14 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const insets = useSafeAreaInsets();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#e64545', // Made-in-China Red
-        tabBarInactiveTintColor: '#94a3b8',
+        tabBarActiveTintColor: '#e64545',
+        tabBarInactiveTintColor: isDark ? '#64748b' : '#94a3b8',
         tabBarItemStyle: {
           borderRadius: 15,
           marginHorizontal: 5,
@@ -34,14 +35,14 @@ export default function TabLayout() {
           marginBottom: 4,
         },
         tabBarStyle: {
-          backgroundColor: '#111827',
-          borderTopColor: 'rgba(255,255,255,0.08)',
+          backgroundColor: isDark ? '#111827' : '#ffffff',
+          borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 88 : 60 + insets.bottom,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 32 : insets.bottom,
           marginHorizontal: Platform.OS === 'ios' ? 0 : 12,
-          marginBottom: Platform.OS === 'ios' ? 0 : 0,
+          marginBottom: Platform.OS === 'ios' ? 0 : 8,
           borderRadius: Platform.OS === 'ios' ? 0 : 24,
           position: 'absolute',
           bottom: 0,
@@ -50,14 +51,14 @@ export default function TabLayout() {
           elevation: 25,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -10 },
-          shadowOpacity: 0.4,
+          shadowOpacity: isDark ? 0.4 : 0.1,
           shadowRadius: 20,
         },
         headerStyle: {
-          backgroundColor: '#0a0f1e',
+          backgroundColor: isDark ? '#0a0f1e' : '#ffffff',
         },
         headerTitleStyle: {
-          color: '#ffffff',
+          color: isDark ? '#ffffff' : '#0f172a',
           fontWeight: '800',
         },
         headerShown: true,

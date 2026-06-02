@@ -7,26 +7,11 @@ import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
-
-const C = {
-  bg: '#080d1a',
-  card: 'rgba(18, 24, 45, 0.85)',
-  border: 'rgba(255,255,255,0.06)',
-  glassOrange: 'rgba(255,149,0,0.10)',
-  glassRed: 'rgba(230,69,69,0.10)',
-  glassGreen: 'rgba(34,172,56,0.10)',
-  glassBlue: 'rgba(20,112,204,0.10)',
-  textMuted: '#64748b',
-  textDim: '#94a3b8',
-  white: '#ffffff',
-  primary: '#e64545',
-  warning: '#ff9500',
-  danger: '#e64545',
-  success: '#22ac38',
-  info: '#1470cc',
-};
+import { useTheme } from '@/components/useTheme';
 
 export default function BundlesScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
   const { showAlert } = useAlert();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
@@ -281,7 +266,7 @@ export default function BundlesScreen() {
 
   if (loading) return (
     <View style={styles.center}>
-      <ActivityIndicator size="large" color={C.primary} />
+      <ActivityIndicator size="large" color={T.primary} />
     </View>
   );
 
@@ -289,7 +274,7 @@ export default function BundlesScreen() {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.scrollBody, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => vendorId && fetchData(vendorId)} tintColor={C.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => vendorId && fetchData(vendorId)} tintColor={T.primary} />}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
@@ -320,7 +305,7 @@ export default function BundlesScreen() {
                 <Image source={{ uri: ApiService.getFileUrl(bundle.images[0]) || undefined }} style={styles.bundleImage} />
               ) : (
                 <View style={[styles.bundleImage, styles.bundleImagePlaceholder]}>
-                  <FontAwesome name="gift" size={28} color={C.textMuted} />
+                  <FontAwesome name="gift" size={28} color={T.textMuted} />
                 </View>
               )}
               <View style={styles.bundleInfo}>
@@ -336,7 +321,7 @@ export default function BundlesScreen() {
                 )}
                 {bundle.isFeatured && (
                   <View style={styles.bundleFeaturedTag}>
-                    <FontAwesome name="star" size={10} color={C.primary} style={{ marginRight: 3 }} />
+                    <FontAwesome name="star" size={10} color={T.primary} style={{ marginRight: 3 }} />
                     <Text style={styles.bundleFeaturedText}>En avant</Text>
                   </View>
                 )}
@@ -347,12 +332,12 @@ export default function BundlesScreen() {
                   onPress={() => handleDelete(bundle)}
                 >
                   {deletingId === bundle.id ? (
-                    <ActivityIndicator size="small" color={C.danger} />
+                    <ActivityIndicator size="small" color={T.danger} />
                   ) : (
                     <FontAwesome name="trash" size={16} color="rgba(239,68,68,0.4)" />
                   )}
                 </TouchableOpacity>
-                <FontAwesome name="chevron-right" size={14} color={C.textMuted} style={{ marginTop: 8 }} />
+                <FontAwesome name="chevron-right" size={14} color={T.textMuted} style={{ marginTop: 8 }} />
               </View>
             </TouchableOpacity>
           );
@@ -380,7 +365,7 @@ export default function BundlesScreen() {
                 <Text style={styles.modalSub}>{editingBundle ? 'Modifiez les détails' : 'Assemblez des produits'}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsModalVisible(false)}>
-                <FontAwesome name="times" size={18} color={C.textDim} />
+                <FontAwesome name="times" size={18} color={T.textDim} />
               </TouchableOpacity>
             </View>
 
@@ -398,7 +383,7 @@ export default function BundlesScreen() {
                 value={name}
                 onChangeText={setName}
                 placeholder="Ex: Pack Découverte"
-                placeholderTextColor={C.textDim}
+                placeholderTextColor={T.textDim}
               />
               
               <Text style={styles.label}>Description</Text>
@@ -408,7 +393,7 @@ export default function BundlesScreen() {
                 onChangeText={setDescription}
                 multiline
                 placeholder="Détails de l'offre..."
-                placeholderTextColor={C.textDim}
+                placeholderTextColor={T.textDim}
               />
 
               <Text style={styles.label}>Prix de vente (DT)</Text>
@@ -418,7 +403,7 @@ export default function BundlesScreen() {
                 onChangeText={setPrice}
                 keyboardType="numeric"
                 placeholder="0.000"
-                placeholderTextColor={C.textDim}
+                placeholderTextColor={T.textDim}
               />
 
               {/* Prix total calculé */}
@@ -428,7 +413,7 @@ export default function BundlesScreen() {
                     <Text style={styles.valueLabel}>Valeur totale des produits</Text>
                     <Text style={styles.valueAmount}>{computedPrice.toFixed(3)} DT</Text>
                   </View>
-                  <FontAwesome name="calculator" size={20} color={C.primary} />
+                  <FontAwesome name="calculator" size={20} color={T.primary} />
                 </View>
               )}
 
@@ -436,13 +421,13 @@ export default function BundlesScreen() {
               <Text style={styles.formSectionTitle}>Photos</Text>
 
               <View style={styles.imageActions}>
-                <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: C.glassGreen }]} onPress={pickImage}>
-                  <FontAwesome name="photo" size={16} color={C.success} />
-                  <Text style={[styles.imageActionText, { color: C.success }]}>Galerie</Text>
+                <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: T.glassGreen }]} onPress={pickImage}>
+                  <FontAwesome name="photo" size={16} color={T.success} />
+                  <Text style={[styles.imageActionText, { color: T.success }]}>Galerie</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: C.glassBlue }]} onPress={takePhoto}>
-                  <FontAwesome name="camera" size={16} color={C.info} />
-                  <Text style={[styles.imageActionText, { color: C.info }]}>Caméra</Text>
+                <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: T.glassBlue }]} onPress={takePhoto}>
+                  <FontAwesome name="camera" size={16} color={T.info} />
+                  <Text style={[styles.imageActionText, { color: T.info }]}>Caméra</Text>
                 </TouchableOpacity>
               </View>
 
@@ -452,7 +437,7 @@ export default function BundlesScreen() {
                   value={newImageUrl}
                   onChangeText={setNewImageUrl}
                   placeholder="Ou URL d'image..."
-                  placeholderTextColor={C.textDim}
+                  placeholderTextColor={T.textDim}
                 />
                 <TouchableOpacity style={styles.imageUrlAddBtn} onPress={addImage}>
                   <FontAwesome name="plus" size={18} color="#fff" />
@@ -461,8 +446,8 @@ export default function BundlesScreen() {
 
               {uploading && (
                 <View style={styles.uploadingRow}>
-                  <ActivityIndicator size="small" color={C.primary} />
-                  <Text style={{ color: C.primary, fontSize: 13 }}>Chargement...</Text>
+                  <ActivityIndicator size="small" color={T.primary} />
+                  <Text style={{ color: T.primary, fontSize: 13 }}>Chargement...</Text>
                 </View>
               )}
 
@@ -472,7 +457,7 @@ export default function BundlesScreen() {
                     <View key={idx} style={styles.imagePreviewWrapper}>
                       <Image source={{ uri: ApiService.getFileUrl(img) || undefined }} style={styles.imagePreview} />
                       <TouchableOpacity style={styles.imageRemoveBtn} onPress={() => removeImage(idx)}>
-                        <FontAwesome name="times-circle" size={22} color={C.danger} />
+                        <FontAwesome name="times-circle" size={22} color={T.danger} />
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -495,14 +480,14 @@ export default function BundlesScreen() {
                       style={styles.qtyBtn}
                       onPress={() => updateItemQty(item.vendorProductId, item.quantity - 1)}
                     >
-                      <FontAwesome name="minus" size={14} color={C.textDim} />
+                      <FontAwesome name="minus" size={14} color={T.textDim} />
                     </TouchableOpacity>
                     <Text style={styles.qtyText}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={[styles.qtyBtn, styles.qtyBtnActive]}
                       onPress={() => updateItemQty(item.vendorProductId, item.quantity + 1)}
                     >
-                      <FontAwesome name="plus" size={14} color={C.primary} />
+                      <FontAwesome name="plus" size={14} color={T.primary} />
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity style={styles.removeItemBtn} onPress={() => removeItemFromBundle(item.vendorProductId)}>
@@ -515,17 +500,17 @@ export default function BundlesScreen() {
               <Text style={styles.formSectionTitle}>Ajouter des produits</Text>
 
               <View style={styles.productSearchBar}>
-                <FontAwesome name="search" size={14} color={C.textDim} style={{ marginRight: 8 }} />
+                <FontAwesome name="search" size={14} color={T.textDim} style={{ marginRight: 8 }} />
                 <TextInput
                   style={styles.productSearchInput}
                   value={productSearch}
                   onChangeText={setProductSearch}
                   placeholder="Chercher un produit..."
-                  placeholderTextColor={C.textDim}
+                  placeholderTextColor={T.textDim}
                 />
                 {productSearch ? (
                   <TouchableOpacity onPress={() => setProductSearch('')}>
-                    <FontAwesome name="times-circle" size={16} color={C.textMuted} />
+                    <FontAwesome name="times-circle" size={16} color={T.textMuted} />
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -543,7 +528,7 @@ export default function BundlesScreen() {
                           <Image source={{ uri: ApiService.getFileUrl(prod.images[0]) || undefined }} style={styles.pickerItemImage} />
                         ) : (
                           <View style={[styles.pickerItemImage, { backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' }]}>
-                            <FontAwesome name="cube" size={12} color={C.textMuted} />
+                            <FontAwesome name="cube" size={12} color={T.textMuted} />
                           </View>
                         )}
                         <View style={{ backgroundColor: 'transparent' }}>
@@ -551,7 +536,7 @@ export default function BundlesScreen() {
                           <Text style={styles.pickerItemPrice}>{Number(prod.price).toFixed(3)} DT</Text>
                         </View>
                       </View>
-                      <FontAwesome name="plus-circle" size={22} color={C.primary} />
+                      <FontAwesome name="plus-circle" size={22} color={T.primary} />
                     </TouchableOpacity>
                   ))
                 ) : (
@@ -575,7 +560,7 @@ export default function BundlesScreen() {
                   <FontAwesome
                     name={isFeatured ? "toggle-on" : "toggle-off"}
                     size={40}
-                    color={isFeatured ? C.primary : C.textMuted}
+                    color={isFeatured ? T.primary : T.textMuted}
                   />
                 </TouchableOpacity>
               </View>
@@ -594,21 +579,22 @@ export default function BundlesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: C.bg },
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
+  container: { flex: 1, backgroundColor: T.bg },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: T.bg },
   scrollBody: { padding: 20 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25, backgroundColor: 'transparent' },
-  title: { fontSize: 26, fontWeight: '900', color: C.white },
-  headerSub: { color: C.textMuted, fontSize: 13, marginTop: 4, fontWeight: '500' },
+  title: { fontSize: 26, fontWeight: '900', color: T.white },
+  headerSub: { color: T.textMuted, fontSize: 13, marginTop: 4, fontWeight: '500' },
   addBtn: {
-    backgroundColor: C.primary,
+    backgroundColor: T.primary,
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: C.primary,
+    shadowColor: T.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -617,14 +603,14 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
 
   bundleCard: {
-    backgroundColor: C.card,
+    backgroundColor: T.card,
     borderRadius: 20,
     padding: 14,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: C.border,
+    borderColor: T.cardBorder,
   },
   bundleImage: {
     width: 72,
@@ -632,19 +618,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   bundleImagePlaceholder: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: T.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   bundleInfo: { flex: 1, marginLeft: 14, backgroundColor: 'transparent' },
-  bundleName: { fontSize: 17, fontWeight: '700', color: C.white },
-  bundleDetails: { fontSize: 12, color: C.textMuted, marginTop: 2 },
-  bundlePrice: { fontSize: 15, fontWeight: '800', color: C.primary, marginTop: 4 },
-  bundleValue: { fontSize: 11, color: C.textMuted, marginTop: 1 },
+  bundleName: { fontSize: 17, fontWeight: '700', color: T.white },
+  bundleDetails: { fontSize: 12, color: T.textMuted, marginTop: 2 },
+  bundlePrice: { fontSize: 15, fontWeight: '800', color: T.primary, marginTop: 4 },
+  bundleValue: { fontSize: 11, color: T.textMuted, marginTop: 1 },
   bundleFeaturedTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.glassRed,
+    backgroundColor: T.glassRed,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -653,30 +639,30 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 6,
   },
-  bundleFeaturedText: { color: C.primary, fontSize: 9, fontWeight: '700', textTransform: 'uppercase' },
+  bundleFeaturedText: { color: T.primary, fontSize: 9, fontWeight: '700', textTransform: 'uppercase' },
 
   bundleActions: { alignItems: 'center', justifyContent: 'center', marginLeft: 8, backgroundColor: 'transparent' },
   deleteBtn: { padding: 8, borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.08)' },
 
   emptyState: { alignItems: 'center', marginTop: 80, backgroundColor: 'transparent' },
-  emptyIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.03)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  emptyText: { color: C.textMuted, fontSize: 16, fontWeight: '600' },
-  emptySubText: { color: 'rgba(100,116,139,0.6)', fontSize: 13, marginTop: 6, textAlign: 'center' },
+  emptyIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: T.sectionBg, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  emptyText: { color: T.textMuted, fontSize: 16, fontWeight: '600' },
+  emptySubText: { color: T.textMuted, fontSize: 13, marginTop: 6, textAlign: 'center', opacity: 0.6 },
 
   // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: T.modalOverlay, justifyContent: 'flex-end' },
   modalContent: {
-    backgroundColor: '#0b1120',
+    backgroundColor: T.modalBg,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     height: '94%',
     paddingBottom: 20,
     marginHorizontal: Platform.OS === 'web' ? '5%' : (Platform.OS === 'ios' && (Platform as any).isPad ? 20 : 0),
     borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: T.cardBorder,
   },
   modalHeader: {
-    backgroundColor: '#0f172a',
+    backgroundColor: T.modalHeaderBg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -684,15 +670,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomColor: T.divider,
   },
-  modalTitle: { fontSize: 20, fontWeight: '900', color: C.white },
-  modalSub: { color: C.textMuted, fontSize: 12, marginTop: 2, fontWeight: '500' },
-  modalCloseBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
+  modalTitle: { fontSize: 20, fontWeight: '900', color: T.white },
+  modalSub: { color: T.textMuted, fontSize: 12, marginTop: 2, fontWeight: '500' },
+  modalCloseBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: T.sectionBg, alignItems: 'center', justifyContent: 'center' },
   modalForm: { flex: 1 },
 
   formSectionTitle: {
-    color: C.primary,
+    color: T.primary,
     fontSize: 13,
     fontWeight: '800',
     textTransform: 'uppercase',
@@ -700,14 +686,14 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 14,
   },
-  label: { fontSize: 12, fontWeight: '700', color: '#cbd5e1', marginBottom: 8, marginLeft: 5 },
+  label: { fontSize: 12, fontWeight: '700', color: T.white, marginBottom: 8, marginLeft: 5 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: T.inputBg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
     borderRadius: 14,
     padding: 16,
-    color: C.white,
+    color: T.white,
     marginBottom: 12,
     fontSize: 15,
   },
@@ -716,95 +702,95 @@ const styles = StyleSheet.create({
   valueCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.glassGreen,
+    backgroundColor: T.glassGreen,
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(16,185,129,0.15)',
     marginBottom: 8,
   },
-  valueLabel: { color: C.textMuted, fontSize: 11, fontWeight: '600' },
-  valueAmount: { color: C.success, fontSize: 18, fontWeight: '900', marginTop: 2 },
+  valueLabel: { color: T.textMuted, fontSize: 11, fontWeight: '600' },
+  valueAmount: { color: T.success, fontSize: 18, fontWeight: '900', marginTop: 2 },
 
   // Images
   imageActions: { flexDirection: 'row', gap: 12, marginBottom: 12, backgroundColor: 'transparent' },
   imageActionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 14, borderRadius: 14 },
   imageActionText: { fontWeight: '700', fontSize: 13 },
   imageUrlRow: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: 'transparent', marginBottom: 10 },
-  imageUrlAddBtn: { backgroundColor: C.primary, width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  imageUrlAddBtn: { backgroundColor: T.primary, width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   uploadingRow: { marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'transparent' },
   imagePreviewRow: { flexDirection: 'row', marginBottom: 16, backgroundColor: 'transparent' },
   imagePreviewWrapper: { position: 'relative', marginRight: 14, backgroundColor: 'transparent' },
-  imagePreview: { width: 72, height: 72, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
+  imagePreview: { width: 72, height: 72, borderRadius: 14, borderWidth: 1, borderColor: T.cardBorder },
   imageRemoveBtn: { position: 'absolute', top: -10, right: -10, backgroundColor: 'transparent' },
 
   // Selected products
   selectedItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     padding: 12,
     borderRadius: 14,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: T.divider,
   },
   selectedItemInfo: { flex: 1, backgroundColor: 'transparent' },
-  selectedItemName: { color: C.white, fontWeight: '600', fontSize: 14 },
-  selectedItemPrice: { color: C.textDim, fontSize: 12, marginTop: 2 },
+  selectedItemName: { color: T.white, fontWeight: '600', fontSize: 14 },
+  selectedItemPrice: { color: T.textDim, fontSize: 12, marginTop: 2 },
   qtyControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent', marginRight: 8 },
-  qtyBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
+  qtyBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: T.sectionBg, alignItems: 'center', justifyContent: 'center' },
   qtyBtnActive: { backgroundColor: 'rgba(245,158,11,0.12)' },
-  qtyText: { color: C.white, fontWeight: '800', marginHorizontal: 12, minWidth: 20, textAlign: 'center', fontSize: 15 },
+  qtyText: { color: T.white, fontWeight: '800', marginHorizontal: 12, minWidth: 20, textAlign: 'center', fontSize: 15 },
   removeItemBtn: { padding: 6, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.08)' },
 
   // Product picker
   productSearchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: T.inputBg,
     borderRadius: 12,
     paddingHorizontal: 14,
     height: 44,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
   },
-  productSearchInput: { flex: 1, color: C.white, fontSize: 14 },
+  productSearchInput: { flex: 1, color: T.white, fontSize: 14 },
   productPicker: { backgroundColor: 'transparent' },
   pickerItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     padding: 12,
     borderRadius: 14,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: T.divider,
   },
   pickerItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'transparent', flex: 1 },
   pickerItemImage: { width: 36, height: 36, borderRadius: 10 },
-  pickerItemText: { color: C.textDim, fontSize: 14, fontWeight: '600' },
-  pickerItemPrice: { color: C.textMuted, fontSize: 11, marginTop: 1 },
-  noProducts: { color: C.textMuted, fontSize: 13, fontStyle: 'italic', textAlign: 'center', marginTop: 20 },
+  pickerItemText: { color: T.textDim, fontSize: 14, fontWeight: '600' },
+  pickerItemPrice: { color: T.textMuted, fontSize: 11, marginTop: 1 },
+  noProducts: { color: T.textMuted, fontSize: 13, fontStyle: 'italic', textAlign: 'center', marginTop: 20 },
 
   // Upsell
   upsellRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.card,
+    backgroundColor: T.card,
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: C.border,
+    borderColor: T.cardBorder,
     marginTop: 24,
   },
-  upsellRowLabel: { color: C.white, fontSize: 15, fontWeight: '700' },
-  upsellRowDesc: { color: C.textMuted, fontSize: 11, marginTop: 2 },
+  upsellRowLabel: { color: T.white, fontSize: 15, fontWeight: '700' },
+  upsellRowDesc: { color: T.textMuted, fontSize: 11, marginTop: 2 },
 
   saveBtn: {
-    backgroundColor: C.primary,
+    backgroundColor: T.primary,
     padding: 20,
     borderRadius: 18,
     alignItems: 'center',
@@ -812,7 +798,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     flexDirection: 'row',
     justifyContent: 'center',
-    shadowColor: C.primary,
+    shadowColor: T.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -820,3 +806,4 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { color: '#fff', fontWeight: '900', fontSize: 16 },
 });
+}

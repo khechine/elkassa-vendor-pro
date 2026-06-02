@@ -6,20 +6,11 @@ import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
-
-const C = {
-  bg: '#080d1a',
-  card: 'rgba(18, 24, 45, 0.85)',
-  border: 'rgba(255,255,255,0.06)',
-  primary: '#e64545',
-  success: '#22ac38',
-  warning: '#ff9500',
-  textMuted: '#64748b',
-  textDim: '#94a3b8',
-  white: '#ffffff',
-};
+import { useTheme } from '@/components/useTheme';
 
 export default function MessagingScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
   const { showAlert } = useAlert();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
@@ -38,7 +29,7 @@ export default function MessagingScreen() {
 
   const fetchConversations = useCallback(async () => {
     try {
-      const data = await ApiService.get('/api/v1/vendor/messages');
+      const data = await ApiService.get('/management/vendor/messages');
       if (data?.success) {
         setConversations(data.data || []);
       }
@@ -63,7 +54,7 @@ export default function MessagingScreen() {
   const fetchMessages = async (otherUserId: string) => {
     setLoadingMessages(true);
     try {
-      const data = await ApiService.get(`/api/v1/vendor/messages?otherUserId=${otherUserId}`);
+      const data = await ApiService.get(`/management/vendor/messages?otherUserId=${otherUserId}`);
       if (data?.success) {
         setMessages(data.data || []);
       }
@@ -89,7 +80,7 @@ export default function MessagingScreen() {
     const content = newMessage.trim();
     setNewMessage('');
     try {
-      const res = await ApiService.post('/api/v1/vendor/messages', {
+      const res = await ApiService.post('/management/vendor/messages', {
         receiverId: selectedUser.id,
         content,
       });
@@ -123,7 +114,7 @@ export default function MessagingScreen() {
   };
 
   if (loading) return (
-    <View style={styles.center}><ActivityIndicator size="large" color={C.primary} /></View>
+    <View style={styles.center}><ActivityIndicator size="large" color={T.primary} /></View>
   );
 
   return (
@@ -140,7 +131,7 @@ export default function MessagingScreen() {
         data={conversations}
         keyExtractor={(item) => item.otherUser?.id || Math.random().toString()}
         contentContainerStyle={styles.listBody}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.primary} />}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -152,7 +143,7 @@ export default function MessagingScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.convCard} activeOpacity={0.7} onPress={() => handleOpenChat(item)}>
             <View style={styles.avatar}>
-              <FontAwesome name="user-circle" size={42} color={C.textMuted} />
+              <FontAwesome name="user-circle" size={42} color={T.textMuted} />
             </View>
             <View style={styles.convInfo}>
               <View style={styles.convTop}>
@@ -176,13 +167,13 @@ export default function MessagingScreen() {
           <View style={styles.chatContent}>
             <View style={styles.chatHeader}>
               <View style={{ backgroundColor: 'transparent', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <FontAwesome name="user-circle" size={32} color={C.textMuted} />
+                <FontAwesome name="user-circle" size={32} color={T.textMuted} />
                 <View style={{ backgroundColor: 'transparent' }}>
                   <Text style={styles.chatTitle}>{selectedUser?.name || 'Client'}</Text>
                 </View>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsChatModalVisible(false)}>
-                <FontAwesome name="times" size={18} color={C.textDim} />
+                <FontAwesome name="times" size={18} color={T.textDim} />
               </TouchableOpacity>
             </View>
 
@@ -200,11 +191,11 @@ export default function MessagingScreen() {
                 ListEmptyComponent={
                   loadingMessages ? (
                     <View style={{ padding: 40, alignItems: 'center', backgroundColor: 'transparent' }}>
-                      <ActivityIndicator size="small" color={C.primary} />
+                      <ActivityIndicator size="small" color={T.primary} />
                     </View>
                   ) : (
                     <View style={{ padding: 40, alignItems: 'center', backgroundColor: 'transparent' }}>
-                      <Text style={{ color: C.textMuted, fontSize: 13 }}>Aucun message. Envoyez le premier message.</Text>
+                      <Text style={{ color: T.textMuted, fontSize: 13 }}>Aucun message. Envoyez le premier message.</Text>
                     </View>
                   )
                 }
@@ -236,7 +227,7 @@ export default function MessagingScreen() {
                   value={newMessage}
                   onChangeText={setNewMessage}
                   placeholder="Votre message..."
-                  placeholderTextColor={C.textDim}
+                  placeholderTextColor={T.textDim}
                   multiline
                   maxLength={500}
                 />
@@ -260,77 +251,22 @@ export default function MessagingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 20 },
-  center: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, backgroundColor: 'transparent' },
-  title: { fontSize: 26, fontWeight: '900', color: C.white },
-  headerSub: { color: C.textMuted, fontSize: 13, marginTop: 4, fontWeight: '500' },
-  listBody: { paddingBottom: 100, flexGrow: 1 },
-  convCard: {
-    flexDirection: 'row', alignItems: 'center', padding: 14,
-    backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
-    borderRadius: 20, marginBottom: 10,
-  },
-  avatar: { width: 44, alignItems: 'center' },
-  convInfo: { flex: 1, marginLeft: 12, backgroundColor: 'transparent' },
-  convTop: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent', marginBottom: 4 },
-  convName: { color: C.white, fontSize: 15, fontWeight: '700', flex: 1 },
-  convTime: { color: C.textMuted, fontSize: 11 },
-  convBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent' },
-  convLastMsg: { color: C.textMuted, fontSize: 13, flex: 1 },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.primary, marginLeft: 8 },
-  emptyState: { alignItems: 'center', marginTop: 100, backgroundColor: 'transparent' },
-  emptyText: { color: C.textMuted, fontSize: 16, marginTop: 16, fontWeight: '600' },
-  emptySubtext: { color: 'rgba(100,116,139,0.6)', fontSize: 13, marginTop: 4 },
-  
-  // Chat Modal
-  chatOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
-  chatContent: {
-    backgroundColor: '#0b1120', borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    height: '94%', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    marginHorizontal: Platform.OS === 'web' ? '5%' : (Platform.OS === 'ios' && (Platform as any).isPad ? 20 : 0),
-  },
-  chatHeader: {
-    backgroundColor: '#0f172a', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
-  },
-  chatTitle: { color: C.white, fontSize: 16, fontWeight: '800' },
-  modalCloseBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
-  chatList: { padding: 16, paddingBottom: 20 },
-  bubbleRow: { flexDirection: 'row', marginBottom: 12, backgroundColor: 'transparent' },
-  bubbleRowOwn: { justifyContent: 'flex-end' },
-  bubble: {
-    maxWidth: '80%', padding: 12, borderRadius: 18,
-  },
-  bubbleOther: {
-    backgroundColor: 'rgba(255,255,255,0.06)', borderTopLeftRadius: 4,
-  },
-  bubbleOwn: {
-    backgroundColor: C.primary, borderTopRightRadius: 4,
-  },
-  bubbleProduct: {
-    backgroundColor: 'rgba(255,255,255,0.1)', padding: 6, borderRadius: 8, marginBottom: 6,
-  },
-  bubbleProductText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-  bubbleText: { color: C.textDim, fontSize: 14, lineHeight: 20 },
-  bubbleTime: { color: C.textMuted, fontSize: 10, marginTop: 4, alignSelf: 'flex-end' },
-  
-  inputBar: {
-    flexDirection: 'row', alignItems: 'flex-end', padding: 12, paddingBottom: 20,
-    backgroundColor: '#0f172a', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)',
-    gap: 10,
-  },
-  messageInput: {
-    flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16,
-    paddingHorizontal: 16, paddingVertical: 12, color: C.white, fontSize: 15,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', maxHeight: 100,
-  },
-  sendBtn: {
-    backgroundColor: C.primary, width: 48, height: 48, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: C.primary, shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3, shadowRadius: 4, elevation: 4,
-  },
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
+  container: { flex: 1, backgroundColor: T.bg, padding: 20 },
+  header: { marginBottom: 16, backgroundColor: 'transparent' },
+  title: { fontSize: 26, fontWeight: '900', color: T.white },
+  scrollBody: { paddingBottom: 40 },
+  msgCard: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: T.card, borderWidth: 1, borderColor: T.cardBorder, borderRadius: 18, marginBottom: 8 },
+  emptyState: { alignItems: 'center', marginTop: 80, backgroundColor: 'transparent' },
+  emptyText: { color: T.textMuted, fontSize: 15, marginTop: 16 },
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: T.modalOverlay, justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: T.modalBg, borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '92%', borderTopWidth: 1, borderColor: T.cardBorder, marginHorizontal: Platform.OS === 'web' ? '5%' : (Platform.OS === 'ios' && (Platform as any).isPad ? 20 : 0) },
+  modalHeader: { backgroundColor: T.modalHeaderBg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32, borderBottomWidth: 1, borderBottomColor: T.divider },
+  modalTitle: { color: T.white, fontSize: 16, fontWeight: '900' },
+  modalCloseBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: T.sectionBg, alignItems: 'center', justifyContent: 'center' },
+  inputField: { backgroundColor: T.inputBg, borderRadius: 14, height: 50, paddingHorizontal: 16, color: T.white, fontSize: 15, marginBottom: 14, borderWidth: 1, borderColor: T.inputBorder },
+  sendBtn: { backgroundColor: T.primary, width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: T.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
 });
+}

@@ -8,10 +8,10 @@ export const Colors = {
   info: '#1470cc',
 
   light: {
-    text: '#ECEDEE',
-    background: '#0a0f1e',
+    text: '#0f172a',
+    background: '#ffffff',
     tint: '#e64545',
-    tabIconDefault: '#687076',
+    tabIconDefault: '#94a3b8',
     tabIconSelected: '#e64545',
   },
   dark: {
@@ -27,6 +27,13 @@ export const Colors = {
     blue: 'rgba(20, 112, 204, 0.12)',
     green: 'rgba(34, 172, 56, 0.12)',
     orange: 'rgba(255, 149, 0, 0.12)',
+    light: {
+      white: 'rgba(0, 0, 0, 0.03)',
+      red: 'rgba(230, 69, 69, 0.08)',
+      blue: 'rgba(20, 112, 204, 0.08)',
+      green: 'rgba(34, 172, 56, 0.08)',
+      orange: 'rgba(255, 149, 0, 0.08)',
+    },
   },
 };
 

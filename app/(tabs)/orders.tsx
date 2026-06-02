@@ -5,30 +5,13 @@ import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
-
-const COLORS = {
-  primary: '#e64545',
-  secondary: '#1470cc',
-  warning: '#ff9500',
-  success: '#22ac38',
-  danger: '#e64545',
-  bg: '#080d1a',
-  card: 'rgba(18, 24, 45, 0.85)',
-  border: 'rgba(255,255,255,0.06)',
-  textMuted: '#64748b',
-  textDim: '#94a3b8',
-  white: '#ffffff',
-};
+import { useTheme } from '@/components/useTheme';
 
 type OrderTab = 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
 
 export default function OrdersScreen() {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<OrderTab>('PENDING');
-  const [vendorId, setVendorId] = useState<string | null>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const T = useTheme();
+  const styles = createStyles(T);
   const { showAlert } = useAlert();
   const insets = useSafeAreaInsets();
 
@@ -39,7 +22,7 @@ export default function OrdersScreen() {
   const fetchClientInfo = async (orderId: string) => {
     setLoadingClient(true);
     try {
-      const res = await ApiService.get(`/api/v1/vendor/orders/${orderId}/client`);
+      const res = await ApiService.get(`/management/vendor/orders/${orderId}/client`);
       if (res && res.success) {
         setClientInfo(res.data);
       }
@@ -447,18 +430,19 @@ export default function OrdersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, backgroundColor: '#0a0f1e', alignItems: 'center', justifyContent: 'center' },
-  container: { flex: 1, backgroundColor: '#0a0f1e', padding: 20 },
-  sectionTitle: { color: '#ffffff', fontSize: 22, fontWeight: '900', marginBottom: 20, letterSpacing: 0.5 },
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
+  loadingContainer: { flex: 1, backgroundColor: T.statusBarBg, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: T.statusBarBg, padding: 20 },
+  sectionTitle: { color: T.text, fontSize: 22, fontWeight: '900', marginBottom: 20, letterSpacing: 0.5 },
   scrollBody: { paddingBottom: 100 },
   tab: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, height: 44, borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.04)', position: 'relative',
+    backgroundColor: T.inputBg, position: 'relative',
     borderWidth: 1, borderColor: 'transparent'
   },
-  tabText: { color: '#475569', fontSize: 12, fontWeight: '800' },
+  tabText: { color: T.textDim, fontSize: 12, fontWeight: '800' },
   tabBadge: {
     position: 'absolute', top: -4, right: -4,
     minWidth: 16, height: 16, borderRadius: 8,
@@ -466,68 +450,68 @@ const styles = StyleSheet.create({
   },
   tabBadgeText: { color: '#fff', fontSize: 9, fontWeight: '900' },
   emptyState: { alignItems: 'center', marginTop: 80 },
-  emptyText: { color: '#475569', textAlign: 'center', fontSize: 14, fontStyle: 'italic' },
+  emptyText: { color: T.textDim, textAlign: 'center', fontSize: 14, fontStyle: 'italic' },
   orderCard: {
-    backgroundColor: 'rgba(16,20,35,0.7)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: T.glassCard, borderWidth: 1, borderColor: T.glassBorder,
     borderRadius: 24, padding: 20, marginBottom: 15
   },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent', marginBottom: 15 },
-  storeName: { color: '#ffffff', fontSize: 16, fontWeight: '800' },
-  orderDate: { color: '#64748b', fontSize: 11, marginTop: 4 },
+  storeName: { color: T.text, fontSize: 16, fontWeight: '800' },
+  orderDate: { color: T.textMuted, fontSize: 11, marginTop: 4 },
   orderTotal: { fontSize: 18, fontWeight: '900' },
   cardBottom: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: 'transparent', paddingTop: 15, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)'
+    backgroundColor: 'transparent', paddingTop: 15, borderTopWidth: 1, borderTopColor: T.divider
   },
-  itemCount: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
+  itemCount: { color: T.textDim, fontSize: 13, fontWeight: '600' },
   quickActions: { flexDirection: 'row', gap: 10, marginTop: 15 },
   quickBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 10, borderRadius: 12, borderWidth: 1
   },
   quickBtnText: { fontSize: 12, fontWeight: '800' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: T.modalOverlay, justifyContent: 'flex-end' },
   modalSheet: {
-    backgroundColor: '#0a0f1e', borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    height: '85%', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)'
+    backgroundColor: T.statusBarBg, borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    height: '85%', borderTopWidth: 1, borderColor: T.glassBorder
   },
   modalHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)'
+    padding: 20, borderBottomWidth: 1, borderBottomColor: T.divider
   },
-  modalTitle: { color: '#ffffff', fontSize: 18, fontWeight: '800' },
-  modalSub: { color: '#64748b', fontSize: 12, marginTop: 2 },
+  modalTitle: { color: T.text, fontSize: 18, fontWeight: '800' },
+  modalSub: { color: T.textMuted, fontSize: 12, marginTop: 2 },
   statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  statusLabel: { color: '#64748b', fontSize: 13, fontWeight: '700' },
+  statusLabel: { color: T.textMuted, fontSize: 13, fontWeight: '700' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   statusText: { fontSize: 12, fontWeight: '900' },
-  sectionLabel: { color: '#374151', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 12 },
+  sectionLabel: { color: T.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 12 },
   itemRow: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)', backgroundColor: 'transparent'
+    borderBottomWidth: 1, borderBottomColor: T.divider, backgroundColor: 'transparent'
   },
-  itemName: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
-  itemSub: { color: '#94a3b8', fontSize: 11, marginTop: 2 },
-  itemTotal: { color: '#ff9500', fontSize: 14, fontWeight: '900' },
+  itemName: { color: T.text, fontSize: 14, fontWeight: '700' },
+  itemSub: { color: T.textDim, fontSize: 11, marginTop: 2 },
+  itemTotal: { color: T.warning, fontSize: 14, fontWeight: '900' },
   totalRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginTop: 20, padding: 18, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16
+    marginTop: 20, padding: 18, backgroundColor: T.sectionBg, borderRadius: 16
   },
-  totalLabel: { color: '#94a3b8', fontSize: 14, fontWeight: '700' },
-  totalValue: { color: '#ff9500', fontSize: 24, fontWeight: '900' },
+  totalLabel: { color: T.textDim, fontSize: 14, fontWeight: '700' },
+  totalValue: { color: T.warning, fontSize: 24, fontWeight: '900' },
   primaryBtn: {
-    backgroundColor: '#1470cc', height: 58, borderRadius: 18,
+    backgroundColor: T.info, height: 58, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10
   },
   primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '900' },
   cancelBtn: { alignItems: 'center', justifyContent: 'center', padding: 16 },
-  cancelBtnText: { color: '#e64545', fontSize: 14, fontWeight: '700' },
+  cancelBtnText: { color: T.primary, fontSize: 14, fontWeight: '700' },
   infoBox: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     marginTop: 25, padding: 16, borderRadius: 16, borderWidth: 1
   },
   vaultCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: T.sectionBg,
     borderWidth: 1,
     borderRadius: 24,
     padding: 18,
@@ -556,7 +540,7 @@ const styles = StyleSheet.create({
   vaultClientName: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#ffffff',
+    color: T.text,
     marginBottom: 14,
   },
   vaultInfoRow: {
@@ -567,20 +551,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   vaultInfoLabel: {
-    color: '#64748b',
+    color: T.textMuted,
     fontSize: 12,
     fontWeight: '800',
     width: 100,
   },
   vaultInfoValue: {
-    color: '#cbd5e1',
+    color: T.textDim,
     fontSize: 12,
     fontWeight: '600',
     flex: 1,
   },
   vaultNotice: {
     fontSize: 11,
-    color: '#94a3b8',
+    color: T.textDim,
     fontStyle: 'italic',
     marginTop: 12,
     textAlign: 'center',
@@ -618,3 +602,4 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 });
+}

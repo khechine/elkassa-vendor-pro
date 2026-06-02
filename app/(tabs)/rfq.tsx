@@ -6,20 +6,11 @@ import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
-
-const C = {
-  bg: '#080d1a',
-  card: 'rgba(18, 24, 45, 0.85)',
-  border: 'rgba(255,255,255,0.06)',
-  primary: '#e64545',
-  success: '#22ac38',
-  warning: '#ff9500',
-  textMuted: '#64748b',
-  textDim: '#94a3b8',
-  white: '#ffffff',
-};
+import { useTheme } from '@/components/useTheme';
 
 export default function RfqScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
   const { showAlert } = useAlert();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
@@ -34,15 +25,18 @@ export default function RfqScreen() {
   const [quoteNotes, setQuoteNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // My quotes view
-  const [showMyQuotes, setShowMyQuotes] = useState(false);
+  // RFQ tabs
+  const [activeRfqTab, setActiveRfqTab] = useState<'disponibles' | 'propositions' | 'acceptees'>('disponibles');
+  const [myRfqs, setMyRfqs] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
-      const data = await ApiService.get('/api/v1/vendor/rfq');
-      if (data?.success) {
-        setRfqs(data.data || []);
-      }
+      const [openRes, myRes] = await Promise.all([
+        ApiService.get('/management/vendor/rfq'),
+        ApiService.get('/management/vendor/rfq?type=my'),
+      ]);
+      if (openRes?.success) setRfqs(openRes.data || []);
+      if (myRes?.success) setMyRfqs(myRes.data || []);
     } catch (error) {
       console.error('Failed to fetch RFQs:', error);
     } finally {
@@ -82,7 +76,7 @@ export default function RfqScreen() {
     }
     setSubmitting(true);
     try {
-      const res = await ApiService.post('/api/v1/vendor/rfq', {
+      const res = await ApiService.post('/management/vendor/rfq', {
         rfqId: selectedRfq.id,
         price: Number(quotePrice),
         notes: quoteNotes || undefined,
@@ -110,12 +104,13 @@ export default function RfqScreen() {
     return new Date(expiresAt) < new Date();
   };
 
-  const myQuotes = rfqs.filter(r => r.hasSubmittedQuote);
   const openRfqs = rfqs.filter(r => !r.hasSubmittedQuote && !isExpired(r.expiresAt));
-  const displayRfqs = showMyQuotes ? myQuotes : openRfqs;
+  const myQuotes = myRfqs.filter(r => r.hasSubmittedQuote);
+  const acceptedQuotes = myRfqs.filter(r => r.myQuote?.status === 'ACCEPTED');
+  const displayRfqs = activeRfqTab === 'disponibles' ? openRfqs : activeRfqTab === 'acceptees' ? acceptedQuotes : myQuotes;
 
   if (loading) return (
-    <View style={styles.center}><ActivityIndicator size="large" color={C.primary} /></View>
+    <View style={styles.center}><ActivityIndicator size="large" color={T.primary} /></View>
   );
 
   return (
@@ -129,26 +124,33 @@ export default function RfqScreen() {
 
       <View style={styles.tabRow}>
         <TouchableOpacity
-          style={[styles.tab, !showMyQuotes && styles.tabActive]}
-          onPress={() => setShowMyQuotes(false)}
+          style={[styles.tab, activeRfqTab === 'disponibles' && styles.tabActive]}
+          onPress={() => setActiveRfqTab('disponibles')}
         >
-          <Text style={[styles.tabText, !showMyQuotes && styles.tabTextActive]}>Disponibles</Text>
+          <Text style={[styles.tabText, activeRfqTab === 'disponibles' && styles.tabTextActive]}>Disponibles</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, showMyQuotes && styles.tabActive]}
-          onPress={() => setShowMyQuotes(true)}
+          style={[styles.tab, activeRfqTab === 'propositions' && styles.tabActive]}
+          onPress={() => setActiveRfqTab('propositions')}
         >
-          <Text style={[styles.tabText, showMyQuotes && styles.tabTextActive]}>Mes propositions ({myQuotes.length})</Text>
+          <Text style={[styles.tabText, activeRfqTab === 'propositions' && styles.tabTextActive]}>Propositions ({myQuotes.length})</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeRfqTab === 'acceptees' && styles.tabActive]}
+          onPress={() => setActiveRfqTab('acceptees')}
+        >
+          <Text style={[styles.tabText, activeRfqTab === 'acceptees' && styles.tabTextActive]}>Acceptées ({acceptedQuotes.length})</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollBody}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={T.primary} />}
         showsVerticalScrollIndicator={false}
       >
         {displayRfqs.map((rfq) => {
-          const expired = !showMyQuotes && isExpired(rfq.expiresAt);
+          const expired = activeRfqTab === 'disponibles' && isExpired(rfq.expiresAt);
+          const quoteStatus = rfq.myQuote?.status;
           return (
             <TouchableOpacity
               key={rfq.id}
@@ -158,18 +160,30 @@ export default function RfqScreen() {
             >
               <View style={styles.rfqHeader}>
                 <View style={styles.rfqStore}>
-                  <FontAwesome name="building" size={14} color={C.textMuted} />
+                  <FontAwesome name="building" size={14} color={T.textMuted} />
                   <Text style={styles.storeName}>{rfq.store?.name || 'Café inconnu'}</Text>
                 </View>
-                {rfq.hasSubmittedQuote && (
-                  <View style={styles.badgeSubmitted}>
-                    <FontAwesome name="check" size={10} color={C.success} />
-                    <Text style={styles.badgeSubmittedText}>Proposé</Text>
+                {quoteStatus === 'ACCEPTED' && (
+                  <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(34,172,56,0.15)', borderColor: 'rgba(34,172,56,0.3)' }]}>
+                    <FontAwesome name="check-circle" size={10} color={T.success} />
+                    <Text style={[styles.badgeSubmittedText, { color: T.success }]}>Acceptée</Text>
                   </View>
                 )}
-                {expired && (
-                  <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(100,100,100,0.15)', borderColor: C.textMuted }]}>
-                    <Text style={[styles.badgeSubmittedText, { color: C.textMuted }]}>Expiré</Text>
+                {quoteStatus === 'REJECTED' && (
+                  <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(230,69,69,0.1)', borderColor: 'rgba(230,69,69,0.25)' }]}>
+                    <FontAwesome name="times-circle" size={10} color={T.primary} />
+                    <Text style={[styles.badgeSubmittedText, { color: T.primary }]}>Refusée</Text>
+                  </View>
+                )}
+                {quoteStatus === 'PENDING' && rfq.hasSubmittedQuote && (
+                  <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(255,149,0,0.1)', borderColor: 'rgba(255,149,0,0.25)' }]}>
+                    <FontAwesome name="clock-o" size={10} color={T.warning} />
+                    <Text style={[styles.badgeSubmittedText, { color: T.warning }]}>En attente</Text>
+                  </View>
+                )}
+                {!rfq.hasSubmittedQuote && expired && (
+                  <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(100,100,100,0.15)', borderColor: T.textMuted }]}>
+                    <Text style={[styles.badgeSubmittedText, { color: T.textMuted }]}>Expiré</Text>
                   </View>
                 )}
               </View>
@@ -182,13 +196,13 @@ export default function RfqScreen() {
               <View style={styles.rfqMeta}>
                 {rfq.category && (
                   <View style={styles.metaItem}>
-                    <FontAwesome name="tag" size={11} color={C.textMuted} />
+                    <FontAwesome name="tag" size={11} color={T.textMuted} />
                     <Text style={styles.metaText}>{rfq.category}</Text>
                   </View>
                 )}
                 {rfq.quantity && (
                   <View style={styles.metaItem}>
-                    <FontAwesome name="shopping-cart" size={11} color={C.textMuted} />
+                    <FontAwesome name="shopping-cart" size={11} color={T.textMuted} />
                     <Text style={styles.metaText}>Qté: {rfq.quantity}</Text>
                   </View>
                 )}
@@ -204,7 +218,7 @@ export default function RfqScreen() {
                   )}
                 </View>
                 <Text style={styles.deadline}>
-                  <FontAwesome name="clock-o" size={10} color={C.textMuted} /> {formatDate(rfq.expiresAt || rfq.createdAt)}
+                  <FontAwesome name="clock-o" size={10} color={T.textMuted} /> {formatDate(rfq.expiresAt || rfq.createdAt)}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -215,7 +229,7 @@ export default function RfqScreen() {
           <View style={styles.emptyState}>
             <FontAwesome name="file-text" size={50} color="rgba(255,255,255,0.06)" />
             <Text style={styles.emptyText}>
-              {showMyQuotes ? "Vous n'avez pas encore soumis de proposition" : "Aucune demande de devis pour le moment"}
+              {activeRfqTab === 'disponibles' ? "Aucune demande de devis pour le moment" : activeRfqTab === 'acceptees' ? "Aucune proposition acceptée" : "Vous n'avez pas encore soumis de proposition"}
             </Text>
           </View>
         )}
@@ -233,7 +247,7 @@ export default function RfqScreen() {
                 <Text style={styles.modalSub}>{selectedRfq?.title}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsModalVisible(false)}>
-                <FontAwesome name="times" size={18} color={C.textDim} />
+                <FontAwesome name="times" size={18} color={T.textDim} />
               </TouchableOpacity>
             </View>
 
@@ -268,7 +282,7 @@ export default function RfqScreen() {
                   onChangeText={setQuotePrice}
                   keyboardType="numeric"
                   placeholder="0.000"
-                  placeholderTextColor={C.textDim}
+                  placeholderTextColor={T.textDim}
                 />
               </View>
 
@@ -280,7 +294,7 @@ export default function RfqScreen() {
                   onChangeText={setQuoteNotes}
                   multiline
                   placeholder="Ajoutez des détails sur votre offre..."
-                  placeholderTextColor={C.textDim}
+                  placeholderTextColor={T.textDim}
                 />
               </View>
 
@@ -304,79 +318,26 @@ export default function RfqScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, padding: 20 },
-  center: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, backgroundColor: 'transparent' },
-  title: { fontSize: 26, fontWeight: '900', color: C.white },
-  headerSub: { color: C.textMuted, fontSize: 13, marginTop: 4, fontWeight: '500' },
-  tabRow: {
-    flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 4, marginBottom: 16,
-  },
-  tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
-  tabActive: { backgroundColor: 'rgba(230,69,69,0.15)' },
-  tabText: { color: C.textDim, fontSize: 13, fontWeight: '600' },
-  tabTextActive: { color: C.primary },
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
+  container: { flex: 1, backgroundColor: T.bg, padding: 20 },
+  header: { marginBottom: 16, backgroundColor: 'transparent' },
+  title: { fontSize: 26, fontWeight: '900', color: T.white },
   scrollBody: { paddingBottom: 40 },
-  rfqCard: {
-    backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 20, padding: 16, marginBottom: 12,
-  },
-  rfqHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent', marginBottom: 10 },
-  rfqStore: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' },
-  storeName: { color: C.textDim, fontSize: 12, fontWeight: '600' },
-  badgeSubmitted: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(34,172,56,0.1)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
-    borderWidth: 1, borderColor: 'rgba(34,172,56,0.25)',
-  },
-  badgeSubmittedText: { color: C.success, fontSize: 10, fontWeight: '800' },
-  rfqTitle: { color: C.white, fontSize: 17, fontWeight: '800', marginBottom: 4 },
-  rfqDesc: { color: C.textMuted, fontSize: 13, lineHeight: 18, marginBottom: 10 },
-  rfqMeta: { flexDirection: 'row', gap: 14, backgroundColor: 'transparent', marginBottom: 12 },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'transparent' },
-  metaText: { color: C.textMuted, fontSize: 11, fontWeight: '600' },
-  rfqFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)', paddingTop: 12, backgroundColor: 'transparent' },
-  footerLeft: { backgroundColor: 'transparent' },
-  budgetText: { color: C.warning, fontSize: 14, fontWeight: '800' },
-  myQuoteText: { color: C.success, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  deadline: { color: C.textMuted, fontSize: 11 },
+  rfqTabRow: { flexDirection: 'row', backgroundColor: T.sectionBg, borderRadius: 12, padding: 3, marginBottom: 16 },
+  rfqTab: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10 },
+  rfqTabActive: { backgroundColor: T.tabActiveBg },
+  rfqTabText: { color: T.textMuted, fontSize: 12, fontWeight: '700' },
+  rfqCard: { backgroundColor: T.card, borderWidth: 1, borderColor: T.cardBorder, borderRadius: 18, padding: 14, marginBottom: 10 },
   emptyState: { alignItems: 'center', marginTop: 80, backgroundColor: 'transparent' },
-  emptyText: { color: C.textMuted, fontSize: 15, marginTop: 16, textAlign: 'center' },
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
-  modalContent: {
-    backgroundColor: '#0b1120', borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    height: '85%', borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    marginHorizontal: Platform.OS === 'web' ? '5%' : (Platform.OS === 'ios' && (Platform as any).isPad ? 20 : 0),
-  },
-  modalHeader: {
-    backgroundColor: '#0f172a', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 20, borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
-  },
-  modalTitle: { fontSize: 20, fontWeight: '900', color: C.white },
-  modalSub: { color: C.textMuted, fontSize: 12, marginTop: 2, fontWeight: '500' },
-  modalCloseBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
-  rfqDetailCard: {
-    backgroundColor: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', marginBottom: 16,
-  },
-  detailRow: { flexDirection: 'row', gap: 10, backgroundColor: 'transparent', marginBottom: 20 },
-  detailItem: { flex: 1, backgroundColor: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
-  detailLabel: { color: C.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 },
-  detailText: { color: C.textDim, fontSize: 13, lineHeight: 18 },
-  detailValue: { color: C.white, fontSize: 14, fontWeight: '700' },
-  formSection: { marginBottom: 16, backgroundColor: 'transparent' },
-  formLabel: { color: '#cbd5e1', fontSize: 12, fontWeight: '700', marginBottom: 8, marginLeft: 5 },
-  formInput: {
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, height: 52, paddingHorizontal: 16,
-    color: C.white, fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
-  },
-  formInputMultiline: { height: 100, paddingTop: 14, textAlignVertical: 'top' },
-  submitBtn: {
-    backgroundColor: C.primary, height: 58, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
-    flexDirection: 'row', marginTop: 20, shadowColor: C.primary, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
-  },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '900' },
+  emptyText: { color: T.textMuted, fontSize: 15, marginTop: 16, textAlign: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: T.modalOverlay, justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: T.modalBg, borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '92%', borderTopWidth: 1, borderColor: T.cardBorder, marginHorizontal: Platform.OS === 'web' ? '5%' : (Platform.OS === 'ios' && (Platform as any).isPad ? 20 : 0) },
+  modalHeader: { backgroundColor: T.modalHeaderBg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderTopLeftRadius: 32, borderTopRightRadius: 32, borderBottomWidth: 1, borderBottomColor: T.divider },
+  modalTitle: { color: T.white, fontSize: 16, fontWeight: '900' },
+  modalCloseBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: T.sectionBg, alignItems: 'center', justifyContent: 'center' },
+  inputField: { backgroundColor: T.inputBg, borderRadius: 14, height: 50, paddingHorizontal: 16, color: T.white, fontSize: 15, marginBottom: 14, borderWidth: 1, borderColor: T.inputBorder },
+  saveBtn: { backgroundColor: T.primary, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginTop: 16, shadowColor: T.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '900' },
 });
+}

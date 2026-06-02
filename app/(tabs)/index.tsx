@@ -7,8 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAlert } from '@/components/AlertContext';
+import { useTheme, ThemeColors } from '@/components/useTheme';
 
 export default function DashboardScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<any>(null);
@@ -284,44 +287,24 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Management Menu */}
-        <Text style={styles.sectionTitle}>Accès Rapide</Text>
-        <View style={styles.mgmtGrid}>
-          <TouchableOpacity 
-            style={[styles.mgmtCard, styles.glassCard]}
-            onPress={() => router.push('/(tabs)/catalogue')}
-          >
-            <View style={[styles.mgmtIconCircle, { backgroundColor: Colors.glass.green }]}>
-              <FontAwesome name="archive" size={20} color={Colors.success} />
-            </View>
-            <Text style={styles.mgmtCardTitle}>CATALOGUE</Text>
-            <Text style={styles.mgmtCardSub}>Produits & Packs</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.mgmtCard, styles.glassCard]}
-            onPress={() => router.push('/(tabs)/ventes')}
-          >
-            <View style={[styles.mgmtIconCircle, { backgroundColor: Colors.glass.blue }]}>
-              <FontAwesome name="shopping-cart" size={20} color={Colors.secondary} />
-            </View>
-            <Text style={styles.mgmtCardTitle}>VENTES</Text>
-            <Text style={styles.mgmtCardSub}>Commandes & Devis</Text>
-          </TouchableOpacity>
- 
-          <TouchableOpacity 
-            style={[styles.mgmtCard, styles.glassCard]}
-            onPress={() => router.push('/(tabs)/wallet')}
-          >
-            <View style={[styles.mgmtIconCircle, { backgroundColor: Colors.glass.orange }]}>
-              <FontAwesome name="google-wallet" size={18} color={Colors.warning} />
-            </View>
-            <Text style={styles.mgmtCardTitle}>MON WALLET</Text>
-            <Text style={styles.mgmtCardSub}>Finance & Retraits</Text>
-          </TouchableOpacity>
+        {/* Quick Access Row */}
+        <View style={styles.qaRow}>
+          {[
+            { icon: 'archive', label: 'Catalogue', route: '/(tabs)/catalogue', color: Colors.success },
+            { icon: 'shopping-cart', label: 'Ventes', route: '/(tabs)/ventes', color: Colors.secondary },
+            { icon: 'file-text', label: 'Devis', route: '/(tabs)/ventes', color: Colors.warning },
+            { icon: 'credit-card', label: 'Wallet', route: '/(tabs)/wallet', color: '#f472b6' },
+            { icon: 'cubes', label: 'Stock', route: '/(tabs)/catalogue', color: '#a78bfa' },
+            { icon: 'users', label: 'Profil', route: '/(tabs)/profile', color: '#64748b' },
+          ].map((item, i) => (
+            <TouchableOpacity key={i} style={styles.qaBtn} onPress={() => router.push(item.route as any)}>
+              <View style={[styles.qaIconCircle, { backgroundColor: item.color + '22' }]}>
+                <FontAwesome name={item.icon as any} size={16} color={item.color} />
+              </View>
+              <Text style={styles.qaLabel}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
-
-
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -387,31 +370,32 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0a0f1e',
+    backgroundColor: T.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
-    color: '#94a3b8',
+    color: T.textMuted,
     marginTop: 15,
     fontSize: 16,
     fontWeight: '500',
   },
   outerContainer: {
     flex: 1,
-    backgroundColor: '#0a0f1e',
+    backgroundColor: T.bg,
   },
   alertBanner: {
     margin: 20,
-    backgroundColor: '#ef4444',
+    backgroundColor: T.danger,
     borderRadius: 20,
     padding: 15,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#ef4444',
+    shadowColor: T.danger,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -431,7 +415,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   alertTitle: {
-    color: '#fff',
+    color: T.white,
     fontSize: 16,
     fontWeight: '800',
   },
@@ -442,13 +426,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   alertActionBtn: {
-    backgroundColor: '#fff',
+    backgroundColor: T.white,
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 10,
   },
   alertActionText: {
-    color: '#ef4444',
+    color: T.danger,
     fontSize: 13,
     fontWeight: '800',
   },
@@ -470,17 +454,17 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#ffffff',
+    color: T.text,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    color: '#94a3b8',
+    color: T.textMuted,
     marginTop: 4,
   },
   profileBtn: {
     padding: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: T.sectionBg,
     borderRadius: 50,
   },
   kpiGrid: {
@@ -495,14 +479,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: T.sectionBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: T.glassBorder,
   },
   actionCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: T.sectionBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: T.glassBorder,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -519,19 +503,19 @@ const styles = StyleSheet.create({
   },
   kpiLabel: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: T.textMuted,
     fontWeight: '600',
   },
   kpiValue: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#ffffff',
+    color: T.text,
     marginVertical: 4,
   },
   kpiTrend: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#10b981',
+    color: T.success,
   },
   featuredCard: {
     padding: 20,
@@ -548,7 +532,7 @@ const styles = StyleSheet.create({
   featuredTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#ffffff',
+    color: T.text,
   },
   seeMore: {
     color: Colors.primary,
@@ -563,23 +547,23 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: T.textMuted,
     marginBottom: 4,
   },
   statValue: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#ffffff',
+    color: T.text,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: T.glassBorder,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#ffffff',
+    color: T.text,
     marginBottom: 15,
   },
   actionScroll: {
@@ -595,7 +579,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 12,
-    color: '#ffffff',
+    color: T.text,
     fontWeight: '600',
     marginTop: 8,
   },
@@ -629,14 +613,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   mgmtCardTitle: {
-    color: '#ffffff',
+    color: T.text,
     fontWeight: '800',
     fontSize: 13,
     letterSpacing: 0.5,
     textAlign: 'center',
   },
   mgmtCardSub: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 10,
     fontWeight: '500',
     marginTop: 4,
@@ -646,11 +630,11 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.85)',
+    backgroundColor: T.modalOverlay,
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: '#0a101f',
+    backgroundColor: T.modalBg,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     height: '92%',
@@ -663,10 +647,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: T.divider,
   },
   modalTitle: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 20,
     fontWeight: '900',
   },
@@ -677,10 +661,10 @@ const styles = StyleSheet.create({
     padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: T.sectionBg,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
   },
   addItemBtnFull: {
     backgroundColor: Colors.primary,
@@ -704,7 +688,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   profitLabel: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -730,7 +714,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   analyticsTitle: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 16,
     fontWeight: '900',
   },
@@ -743,18 +727,18 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: T.sectionBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
   },
   topVendorName: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 18,
     fontWeight: '900',
   },
   topVendorRevenue: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 13,
     fontWeight: '600',
     marginTop: 2,
@@ -772,22 +756,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomColor: T.divider,
     backgroundColor: 'transparent',
   },
   rankNum: {
-    color: '#64748b',
+    color: T.textMuted,
     fontSize: 13,
     fontWeight: '800',
     width: 30,
   },
   rankName: {
-    color: '#ffffff',
+    color: T.text,
     fontSize: 14,
     fontWeight: '700',
   },
   rankSub: {
-    color: '#64748b',
+    color: T.textMuted,
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
@@ -811,17 +795,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: '#ef4444',
+    backgroundColor: T.danger,
     width: 16,
     height: 16,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#0a0f1e',
+    borderColor: T.bg,
   },
   notifBadgeText: {
-    color: '#fff',
+    color: T.white,
     fontSize: 9,
     fontWeight: '900',
   },
@@ -831,7 +815,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: T.divider,
     gap: 8,
   },
   markAllReadText: {
@@ -843,7 +827,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 15,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     marginBottom: 10,
     alignItems: 'center',
   },
@@ -856,26 +840,58 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   notifTitle: {
-    color: '#cbd5e1',
+    color: T.textDim,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   notifMessage: {
-    color: '#94a3b8',
+    color: T.textMuted,
     fontSize: 12,
     marginBottom: 6,
   },
   notifDate: {
-    color: '#64748b',
+    color: T.textMuted,
     fontSize: 10,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ef4444',
+    backgroundColor: T.danger,
     marginLeft: 10,
   },
+  qaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 20,
+    marginBottom: 10,
+    backgroundColor: 'transparent',
+  },
+  qaBtn: {
+    width: '31%',
+    backgroundColor: T.glassCard,
+    borderWidth: 1,
+    borderColor: T.glassBorder,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    gap: 8,
+  },
+  qaIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qaLabel: {
+    color: T.textMuted,
+    fontSize: 10,
+    fontWeight: '700',
+  },
 });
+}
 

@@ -8,21 +8,9 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useLocalSearchParams } from 'expo-router';
 import { useAlert } from '@/components/AlertContext';
+import { useTheme } from '@/components/useTheme';
 
 const C = Colors;
-const S = {
-  bg: '#080d1a',
-  card: 'rgba(18, 24, 45, 0.85)',
-  border: 'rgba(255,255,255,0.06)',
-  borderActive: 'rgba(230,69,69,0.25)',
-  glassGreen: 'rgba(34,172,56,0.10)',
-  glassAmber: 'rgba(255,149,0,0.10)',
-  glassRed: 'rgba(230,69,69,0.10)',
-  glassBlue: 'rgba(20,112,204,0.10)',
-  textMuted: '#64748b',
-  textDim: '#94a3b8',
-  white: '#ffffff',
-};
 
 const STOCK_OPTIONS = [
   { value: 'IN_STOCK', label: 'En Stock', color: '#22ac38' },
@@ -31,6 +19,8 @@ const STOCK_OPTIONS = [
 ];
 
 export default function ProductsScreen() {
+  const T = useTheme();
+  const styles = createStyles(T);
   const { tab } = useLocalSearchParams();
   const { showAlert } = useAlert();
   const insets = useSafeAreaInsets();
@@ -279,7 +269,7 @@ export default function ProductsScreen() {
   });
 
   const renderStockBadge = (status: string) => {
-    const opt = STOCK_OPTIONS.find(s => s.value === status);
+    const opt = STOCK_OPTIONT.find(s => s.value === status);
     if (!opt) return null;
     return (
       <View style={[styles.stockBadge, { borderColor: opt.color }]}>
@@ -312,27 +302,27 @@ export default function ProductsScreen() {
 
       <View style={styles.tabContainer}>
         <TouchableOpacity style={[styles.tab, activeTab === 'CATALOG' && styles.activeTab]} onPress={() => setActiveTab('CATALOG')}>
-          <FontAwesome name="th-large" size={14} color={activeTab === 'CATALOG' ? C.warning : S.textDim} style={{ marginRight: 6 }} />
+          <FontAwesome name="th-large" size={14} color={activeTab === 'CATALOG' ? C.warning : T.textDim} style={{ marginRight: 6 }} />
           <Text style={[styles.tabText, activeTab === 'CATALOG' && styles.activeTabText]}>Catalogue</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, activeTab === 'PROMOTIONS' && styles.activeTab]} onPress={() => setActiveTab('PROMOTIONS')}>
-          <FontAwesome name="bolt" size={14} color={activeTab === 'PROMOTIONS' ? C.warning : S.textDim} style={{ marginRight: 6 }} />
+          <FontAwesome name="bolt" size={14} color={activeTab === 'PROMOTIONS' ? C.warning : T.textDim} style={{ marginRight: 6 }} />
           <Text style={[styles.tabText, activeTab === 'PROMOTIONS' && styles.activeTabText]}>Promotions</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchBar}>
-        <FontAwesome name="search" size={16} color={S.textDim} style={{ marginRight: 10 }} />
+        <FontAwesome name="search" size={16} color={T.textDim} style={{ marginRight: 10 }} />
         <TextInput 
           placeholder="Chercher un produit..." 
-          placeholderTextColor={S.textDim}
+          placeholderTextColor={T.textDim}
           style={styles.searchInput}
           value={search}
           onChangeText={setSearch}
         />
         {search ? (
           <TouchableOpacity onPress={() => setSearch('')}>
-            <FontAwesome name="times-circle" size={18} color={S.textMuted} />
+            <FontAwesome name="times-circle" size={18} color={T.textMuted} />
           </TouchableOpacity>
         ) : null}
       </View>
@@ -353,7 +343,7 @@ export default function ProductsScreen() {
               <Image source={{ uri: ApiService.getFileUrl(p.images[0]) || undefined }} style={styles.itemImage} />
             ) : (
               <View style={[styles.itemImage, styles.itemImagePlaceholder]}>
-                <FontAwesome name="cube" size={24} color={S.textMuted} />
+                <FontAwesome name="cube" size={24} color={T.textMuted} />
               </View>
             )}
             
@@ -397,7 +387,7 @@ export default function ProductsScreen() {
                   <FontAwesome name="trash" size={16} color="rgba(239,68,68,0.5)" />
                 )}
               </TouchableOpacity>
-              <FontAwesome name="chevron-right" size={14} color={S.textMuted} style={{ marginTop: 8 }} />
+              <FontAwesome name="chevron-right" size={14} color={T.textMuted} style={{ marginTop: 8 }} />
             </View>
           </TouchableOpacity>
         ))}
@@ -405,7 +395,7 @@ export default function ProductsScreen() {
         {filteredProducts.length === 0 && (
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-              <FontAwesome name={activeTab === 'PROMOTIONS' ? 'bolt' : 'cube'} size={40} color="rgba(255,255,255,0.06)" />
+              <FontAwesome name={activeTab === 'PROMOTIONS' ? 'bolt' : 'cube'} size={40} color={T.cardBorder} />
             </View>
             <Text style={styles.emptyText}>
               {activeTab === 'PROMOTIONS'
@@ -429,7 +419,7 @@ export default function ProductsScreen() {
                 <Text style={styles.modalSub}>{editingItem ? 'Modifiez les détails du produit' : 'Remplissez les informations'}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsItemModalVisible(false)}>
-                <FontAwesome name="times" size={18} color={S.textDim} />
+                <FontAwesome name="times" size={18} color={T.textDim} />
               </TouchableOpacity>
             </View>
 
@@ -447,7 +437,7 @@ export default function ProductsScreen() {
                 value={formName}
                 onChangeText={setFormName}
                 placeholder="Ex: Café Latte Bio"
-                placeholderTextColor={S.textDim}
+                placeholderTextColor={T.textDim}
               />
 
               <Text style={styles.inputLabel}>Description</Text>
@@ -456,7 +446,7 @@ export default function ProductsScreen() {
                 value={formDescription}
                 onChangeText={setFormDescription}
                 placeholder="Description du produit..."
-                placeholderTextColor={S.textDim}
+                placeholderTextColor={T.textDim}
                 multiline
                 numberOfLines={3}
               />
@@ -467,7 +457,7 @@ export default function ProductsScreen() {
                 value={formCategory}
                 onChangeText={setFormCategory}
                 placeholder="Ex: Boissons, Pâtisseries..."
-                placeholderTextColor={S.textDim}
+                placeholderTextColor={T.textDim}
               />
 
               {/* Section: Prix et Quantité */}
@@ -482,7 +472,7 @@ export default function ProductsScreen() {
                     onChangeText={setFormPrice}
                     keyboardType="numeric"
                     placeholder="0.000"
-                    placeholderTextColor={S.textDim}
+                    placeholderTextColor={T.textDim}
                   />
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
@@ -493,7 +483,7 @@ export default function ProductsScreen() {
                     onChangeText={setFormDiscountPrice}
                     keyboardType="numeric"
                     placeholder="Optionnel"
-                    placeholderTextColor={S.textDim}
+                    placeholderTextColor={T.textDim}
                   />
                 </View>
               </View>
@@ -507,7 +497,7 @@ export default function ProductsScreen() {
                     onChangeText={setFormMinQty}
                     keyboardType="numeric"
                     placeholder="1"
-                    placeholderTextColor={S.textDim}
+                    placeholderTextColor={T.textDim}
                   />
                 </View>
               </View>
@@ -516,7 +506,7 @@ export default function ProductsScreen() {
               <Text style={styles.formSectionTitle}>Gestion du stock</Text>
 
               <View style={styles.stockGrid}>
-                {STOCK_OPTIONS.map(s => (
+                {STOCK_OPTIONT.map(s => (
                   <TouchableOpacity
                     key={s.value}
                     style={[styles.stockCard, formStock === s.value && { borderColor: s.color, backgroundColor: s.color + '18' }]}
@@ -550,7 +540,7 @@ export default function ProductsScreen() {
                   value={newImageUrl}
                   onChangeText={setNewImageUrl}
                   placeholder="Ou collez une URL d'image..."
-                  placeholderTextColor={S.textDim}
+                  placeholderTextColor={T.textDim}
                 />
                 <TouchableOpacity style={styles.imageUrlAddBtn} onPress={addImage}>
                   <FontAwesome name="plus" size={18} color="#fff" />
@@ -582,19 +572,19 @@ export default function ProductsScreen() {
 
               <View style={styles.upsellGrid}>
                 <TouchableOpacity
-                  style={[styles.upsellCard, formFeatured && { borderColor: C.warning, backgroundColor: S.glassAmber }]}
+                  style={[styles.upsellCard, formFeatured && { borderColor: C.warning, backgroundColor: T.glassAmber }]}
                   onPress={() => setFormFeatured(!formFeatured)}
                 >
-                  <FontAwesome name="star" size={24} color={formFeatured ? C.warning : S.textMuted} />
+                  <FontAwesome name="star" size={24} color={formFeatured ? C.warning : T.textMuted} />
                   <Text style={[styles.upsellLabel, formFeatured && { color: C.warning }]}>En avant</Text>
                   <Text style={styles.upsellDesc}>Met ce produit en vedette</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.upsellCard, formFlash && { borderColor: C.primary, backgroundColor: S.glassRed }]}
+                  style={[styles.upsellCard, formFlash && { borderColor: C.primary, backgroundColor: T.glassRed }]}
                   onPress={() => setFormFlash(!formFlash)}
                 >
-                  <FontAwesome name="bolt" size={24} color={formFlash ? C.primary : S.textMuted} />
+                  <FontAwesome name="bolt" size={24} color={formFlash ? C.primary : T.textMuted} />
                   <Text style={[styles.upsellLabel, formFlash && { color: C.primary }]}>Flash Sale</Text>
                   <Text style={styles.upsellDesc}>Active le mode flash</Text>
                 </TouchableOpacity>
@@ -614,16 +604,17 @@ export default function ProductsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(T: ThemeColors) {
+return StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: S.bg,
+    backgroundColor: T.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: S.bg,
+    backgroundColor: T.bg,
     padding: 20,
   },
   header: {
@@ -634,13 +625,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   sectionTitle: {
-    color: S.white,
+    color: T.white,
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   headerSub: {
-    color: S.textMuted,
+    color: T.textMuted,
     fontSize: 13,
     marginTop: 4,
     fontWeight: '500',
@@ -659,13 +650,13 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   addBtnText: {
-    color: '#fff',
+    color: T.white,
     fontWeight: '800',
     fontSize: 14,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     borderRadius: 14,
     padding: 4,
     marginBottom: 16,
@@ -679,10 +670,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeTab: {
-    backgroundColor: 'rgba(230, 69, 69, 0.15)',
+    backgroundColor: T.tabActiveBg,
   },
   tabText: {
-    color: S.textDim,
+    color: T.textDim,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -692,17 +683,17 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: T.inputBg,
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 50,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
   },
   searchInput: {
     flex: 1,
-    color: S.white,
+    color: T.white,
     fontSize: 15,
   },
   scrollBody: {
@@ -714,9 +705,9 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 20,
     marginBottom: 12,
-    backgroundColor: S.card,
+    backgroundColor: T.card,
     borderWidth: 1,
-    borderColor: S.border,
+    borderColor: T.cardBorder,
   },
   itemImage: {
     width: 70,
@@ -724,7 +715,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   itemImagePlaceholder: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: T.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -734,7 +725,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   itemName: {
-    color: S.white,
+    color: T.white,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -757,7 +748,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   itemMeta: {
-    color: S.textMuted,
+    color: T.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
@@ -795,11 +786,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   tagFeatured: {
-    backgroundColor: S.glassAmber,
+    backgroundColor: T.glassOrange,
     borderColor: 'rgba(245, 158, 11, 0.2)',
   },
   tagFlash: {
-    backgroundColor: S.glassRed,
+    backgroundColor: T.glassRed,
     borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   tagText: {
@@ -816,7 +807,7 @@ const styles = StyleSheet.create({
   deleteBtn: {
     padding: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(239,68,68,0.08)',
+    backgroundColor: T.glassRed,
   },
   emptyState: {
     alignItems: 'center',
@@ -827,13 +818,13 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   emptyText: {
-    color: S.textMuted,
+    color: T.textMuted,
     fontSize: 15,
     textAlign: 'center',
   },
@@ -841,20 +832,20 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: T.modalOverlay,
   },
   modalSheet: {
-    backgroundColor: '#0b1120',
+    backgroundColor: T.modalBg,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     height: '94%',
     paddingBottom: 20,
     marginHorizontal: Platform.OS === 'web' ? '5%' : (Platform.OS === 'ios' && (Platform as any).isPad ? 20 : 0),
     borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: T.cardBorder,
   },
   modalHeader: {
-    backgroundColor: '#0f172a',
+    backgroundColor: T.modalHeaderBg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -862,15 +853,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomColor: T.divider,
   },
   modalTitle: {
-    color: S.white,
+    color: T.white,
     fontSize: 20,
     fontWeight: '900',
   },
   modalSub: {
-    color: S.textMuted,
+    color: T.textMuted,
     fontSize: 12,
     marginTop: 2,
     fontWeight: '500',
@@ -879,7 +870,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: T.inputBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -893,22 +884,22 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   inputLabel: {
-    color: '#cbd5e1',
+    color: T.textDim,
     fontSize: 12,
     fontWeight: '700',
     marginBottom: 8,
     marginLeft: 5,
   },
   modalInput: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: T.inputBg,
     borderRadius: 14,
     height: 52,
     paddingHorizontal: 16,
-    color: S.white,
+    color: T.white,
     fontSize: 15,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
   },
   modalInputMultiline: {
     height: 80,
@@ -934,21 +925,21 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 12,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
   },
   stockRadio: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: S.textMuted,
+    borderColor: T.textMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stockLabel: {
-    color: S.textDim,
+    color: T.textDim,
     fontSize: 11,
     fontWeight: '700',
     flex: 1,
@@ -1010,7 +1001,7 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: T.cardBorder,
   },
   imageRemoveBtn: {
     position: 'absolute',
@@ -1030,18 +1021,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 18,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: T.sectionBg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: T.inputBorder,
     gap: 8,
   },
   upsellLabel: {
-    color: S.textDim,
+    color: T.textDim,
     fontSize: 14,
     fontWeight: '800',
   },
   upsellDesc: {
-    color: S.textMuted,
+    color: T.textMuted,
     fontSize: 10,
     textAlign: 'center',
   },
@@ -1061,8 +1052,9 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   saveBtnText: {
-    color: '#fff',
+    color: T.white,
     fontSize: 16,
     fontWeight: '900',
   },
 });
+}
