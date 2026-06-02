@@ -355,7 +355,7 @@ export default function CatalogueScreen() {
         <Text style={styles.itemName} numberOfLines={1}>{p.productStandard?.name || p.name}</Text>
         <Text style={styles.itemPrice}>{Number(p.price).toFixed(3)} DT</Text>
         <View style={styles.itemTags}>
-          {STOCK_OPTIONT.filter(s => s.value === p.stockStatus).map(s => (
+          {STOCK_OPTIONS.filter(s => s.value === p.stockStatus).map(s => (
             <View key={s.value} style={[styles.tag, { borderColor: s.color }]}>
               <Text style={{ color: s.color, fontSize: 9, fontWeight: '800' }}>{s.label}</Text>
             </View>
@@ -504,7 +504,7 @@ export default function CatalogueScreen() {
                 </View>
               </View>
               <View style={{ flexDirection: 'row', gap: 12, backgroundColor: 'transparent' }}>
-                {STOCK_OPTIONT.map(s => (
+                {STOCK_OPTIONS.map(s => (
                   <TouchableOpacity key={s.value} style={[styles.stockChip, pStock === s.value && { borderColor: s.color, backgroundColor: s.color + '18' }]} onPress={() => setPStock(s.value)}>
                     <Text style={[styles.stockChipText, pStock === s.value && { color: s.color }]}>{s.label}</Text>
                   </TouchableOpacity>

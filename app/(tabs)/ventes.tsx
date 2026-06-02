@@ -204,7 +204,7 @@ const fetchConversations = useCallback(async () => {
   ] as const;
 
   const orderStatusColor = (status: string) => {
-    const tab = ORDER_TABT.find(t => t.key === status);
+    const tab = ORDER_TABS.find(t => t.key === status);
     return tab?.color || T.textMuted;
   };
 
@@ -256,7 +256,7 @@ const fetchConversations = useCallback(async () => {
         {activeSubTab === 'commandes' && (
           <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16, flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
-              {ORDER_TABT.map(tab => (
+              {ORDER_TABS.map(tab => (
                 <TouchableOpacity
                   key={tab.key}
                   style={[styles.orderTab, orderTab === tab.key && { backgroundColor: `${tab.color}22`, borderColor: tab.color }]}
