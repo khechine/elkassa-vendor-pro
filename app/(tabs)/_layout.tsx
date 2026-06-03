@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { useThemeContext } from '@/components/ThemeContext';
 import { AuthService } from '@/services/auth';
+import { t } from '@/constants/translations';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -65,40 +66,40 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tableau de Bord',
-          tabBarLabel: 'Dashboard',
+          title: t('tabs.dashboard.title'),
+          tabBarLabel: t('tabs.dashboard'),
           tabBarIcon: ({ color }) => <TabBarIcon name="bar-chart" color={color} />,
         }}
       />
       <Tabs.Screen
         name="catalogue"
         options={{
-          title: 'Catalogue',
-          tabBarLabel: 'Catalogue',
+          title: t('tabs.catalogue'),
+          tabBarLabel: t('tabs.catalogue'),
           tabBarIcon: ({ color }) => <TabBarIcon name="archive" color={color} />,
         }}
       />
       <Tabs.Screen
         name="ventes"
         options={{
-          title: 'Ventes',
-          tabBarLabel: 'Ventes',
+          title: t('tabs.ventes'),
+          tabBarLabel: t('tabs.ventes'),
           tabBarIcon: ({ color }) => <TabBarIcon name="shopping-cart" color={color} />,
         }}
       />
       <Tabs.Screen
         name="wallet"
         options={{
-          title: 'Mon Wallet',
-          tabBarLabel: 'Wallet',
+          title: t('tabs.wallet.title'),
+          tabBarLabel: t('tabs.wallet'),
           tabBarIcon: ({ color }) => <TabBarIcon name="credit-card" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Mon Profil',
-          tabBarLabel: 'Profil',
+          title: t('tabs.profil.title'),
+          tabBarLabel: t('tabs.profil'),
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />

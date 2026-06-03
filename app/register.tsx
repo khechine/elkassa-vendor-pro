@@ -7,6 +7,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import { useAlert } from '@/components/AlertContext';
+import { useT } from '../constants/translations';
 
 export default function RegisterScreen() {
   const [role, setRole] = useState<'STORE_OWNER' | 'VENDOR'>('VENDOR');
@@ -19,6 +20,7 @@ export default function RegisterScreen() {
   
   const router = useRouter();
   const { showAlert } = useAlert();
+  const t = useT();
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim() || !companyName.trim()) {
@@ -71,7 +73,7 @@ export default function RegisterScreen() {
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>RV</Text>
           </View>
-          <Text style={styles.brandName}>Devenir Partenaire</Text>
+          <Text style={styles.brandName}>{t('register.title')}</Text>
           <Text style={styles.tagline}>Rejoignez le réseau B2B</Text>
         </View>
 
@@ -81,13 +83,13 @@ export default function RegisterScreen() {
             style={[styles.modeToggleBtn, role === 'VENDOR' && styles.modeToggleBtnActive]}
             onPress={() => setRole('VENDOR')}
           >
-            <Text style={[styles.modeToggleText, role === 'VENDOR' && styles.modeToggleTextActive]}>Fournisseur</Text>
+            <Text style={[styles.modeToggleText, role === 'VENDOR' && styles.modeToggleTextActive]}>{t('register.vendor')}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.modeToggleBtn, role === 'STORE_OWNER' && styles.modeToggleBtnActive]}
             onPress={() => setRole('STORE_OWNER')}
           >
-            <Text style={[styles.modeToggleText, role === 'STORE_OWNER' && styles.modeToggleTextActive]}>Ma Boutique</Text>
+            <Text style={[styles.modeToggleText, role === 'STORE_OWNER' && styles.modeToggleTextActive]}>{t('register.storeOwner')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -95,7 +97,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputContainer, styles.glassEffect]}>
             <FontAwesome name="user-o" size={18} color="#94a3b8" style={styles.inputIcon} />
             <TextInput
-              placeholder="Nom Complet"
+              placeholder={t('register.name')}
               placeholderTextColor="#94a3b8"
               style={styles.input}
               value={name}
@@ -106,7 +108,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputContainer, styles.glassEffect]}>
             <FontAwesome name="envelope-o" size={18} color="#94a3b8" style={styles.inputIcon} />
             <TextInput
-              placeholder="Email professionnel"
+              placeholder={t('register.email')}
               placeholderTextColor="#94a3b8"
               style={styles.input}
               value={email}
@@ -119,7 +121,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputContainer, styles.glassEffect]}>
             <FontAwesome name="lock" size={20} color="#94a3b8" style={styles.inputIcon} />
             <TextInput
-              placeholder="Mot de passe"
+              placeholder={t('register.password')}
               placeholderTextColor="#94a3b8"
               style={styles.input}
               value={password}
@@ -137,7 +139,7 @@ export default function RegisterScreen() {
           <View style={[styles.inputContainer, styles.glassEffect]}>
             <FontAwesome name={role === 'VENDOR' ? "truck" : "coffee"} size={18} color="#94a3b8" style={styles.inputIcon} />
             <TextInput
-              placeholder={role === 'VENDOR' ? "Nom de votre entreprise" : "Nom de votre établissement"}
+              placeholder={role === 'VENDOR' ? t('register.company') : t('register.company')}
               placeholderTextColor="#94a3b8"
               style={styles.input}
               value={companyName}
@@ -153,7 +155,7 @@ export default function RegisterScreen() {
             {loading
               ? <ActivityIndicator color="#ffffff" />
               : <>
-                  <Text style={styles.registerBtnText}>Créer mon compte</Text>
+                  <Text style={styles.registerBtnText}>{t('register.signUp')}</Text>
                   <FontAwesome name="check" size={16} color="#ffffff" />
                 </>
             }
@@ -161,9 +163,9 @@ export default function RegisterScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Déjà partenaire ?</Text>
+          <Text style={styles.footerText}>{t('register.haveAccount')}</Text>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.loginLink}> Se connecter</Text>
+            <Text style={styles.loginLink}> {t('register.signIn')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

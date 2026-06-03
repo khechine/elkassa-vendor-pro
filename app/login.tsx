@@ -7,6 +7,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import { useAlert } from '@/components/AlertContext';
+import { useT } from '../constants/translations';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { showAlert } = useAlert();
+  const t = useT();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -52,15 +54,15 @@ export default function LoginScreen() {
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>RV</Text>
           </View>
-          <Text style={styles.brandName}>Rachma Vendor</Text>
-          <Text style={styles.tagline}>Espace Partenaire B2B</Text>
+          <Text style={styles.brandName}>{t('login.title')}</Text>
+          <Text style={styles.tagline}>{t('login.subtitle')}</Text>
         </View>
 
         <View style={styles.formSection}>
             <View style={[styles.inputContainer, styles.glassEffect]}>
             <FontAwesome name="envelope-o" size={18} color="#94a3b8" style={styles.inputIcon} />
             <TextInput
-                placeholder="Email professionnel"
+                placeholder={t('login.email')}
                 placeholderTextColor="#94a3b8"
                 style={styles.input}
                 value={email}
@@ -73,7 +75,7 @@ export default function LoginScreen() {
             <View style={[styles.inputContainer, styles.glassEffect]}>
             <FontAwesome name="lock" size={20} color="#94a3b8" style={styles.inputIcon} />
             <TextInput
-                placeholder="Mot de passe"
+                placeholder={t('login.password')}
                 placeholderTextColor="#94a3b8"
                 style={styles.input}
                 value={password}
@@ -89,14 +91,14 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity style={styles.forgotBtn}>
-                <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+                <Text style={styles.forgotText}>{t('login.forgotPassword')}</Text>
             </TouchableOpacity>
 
           <TouchableOpacity style={[styles.loginBtn, loading && { opacity: 0.7 }]} onPress={handleLogin} disabled={loading}>
             {loading
               ? <ActivityIndicator color="#ffffff" />
               : <>
-                  <Text style={styles.loginBtnText}>Se Connecter</Text>
+                  <Text style={styles.loginBtnText}>{t('login.signIn')}</Text>
                   <FontAwesome name="arrow-right" size={16} color="#ffffff" />
                 </>
             }
@@ -104,9 +106,9 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Devenir partenaire ?</Text>
+          <Text style={styles.footerText}>{t('login.noAccount')}</Text>
           <TouchableOpacity onPress={() => router.push('/register')}>
-            <Text style={styles.signupText}> Rejoindre le réseau</Text>
+            <Text style={styles.signupText}> {t('login.register')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

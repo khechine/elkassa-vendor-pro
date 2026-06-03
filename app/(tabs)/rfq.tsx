@@ -5,6 +5,7 @@ import { Text, View } from '@/components/Themed';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useT } from '@/constants/translations';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
 
@@ -55,6 +56,8 @@ export default function RfqScreen() {
     });
   }, [fetchData]);
 
+  const t = useT();
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchData();
@@ -62,7 +65,7 @@ export default function RfqScreen() {
 
   const handleOpenQuoteModal = (rfq: any) => {
     if (rfq.hasSubmittedQuote) {
-      return showAlert({ title: 'Déjà soumis', message: 'Vous avez déjà envoyé une proposition pour cette demande.', type: 'warning' });
+      return showAlert({ title: t('general.info'), message: t('rfq.alreadySubmitted'), type: 'warning' });
     }
     setSelectedRfq(rfq);
     setQuotePrice(String(rfq.budget ? Number(rfq.budget) * 0.95 : ''));
@@ -72,7 +75,7 @@ export default function RfqScreen() {
 
   const handleSubmitQuote = async () => {
     if (!quotePrice || Number(quotePrice) <= 0) {
-      return showAlert({ title: 'Erreur', message: 'Veuillez entrer un prix valide.', type: 'error' });
+      return showAlert({ title: t('general.error'), message: t('rfq.invalidPrice'), type: 'error' });
     }
     setSubmitting(true);
     try {
@@ -83,14 +86,14 @@ export default function RfqScreen() {
       });
       if (res?.success) {
         setIsModalVisible(false);
-        showAlert({ title: 'Proposition envoyée', message: 'Votre devis a été soumis avec succès.', type: 'success' });
+        showAlert({ title: t('rfq.proposalSent'), message: t('rfq.proposalSuccess'), type: 'success' });
         fetchData();
       } else {
-        showAlert({ title: 'Erreur', message: res?.error || 'Échec de l\'envoi.', type: 'error' });
+        showAlert({ title: t('general.error'), message: res?.error || t('rfq.sendFailed'), type: 'error' });
       }
     } catch (error: any) {
-      const msg = error instanceof Error ? error.message : "Erreur lors de l'envoi";
-      showAlert({ title: 'Erreur', message: msg, type: 'error' });
+      const msg = error instanceof Error ? error.message : t('rfq.sendError');
+      showAlert({ title: t('general.error'), message: msg, type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -117,8 +120,8 @@ export default function RfqScreen() {
     <View style={[styles.container, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]}>
       <View style={styles.header}>
         <View style={{ backgroundColor: 'transparent' }}>
-          <Text style={styles.title}>Demandes de devis</Text>
-          <Text style={styles.headerSub}>{openRfqs.length} demande{openRfqs.length !== 1 ? 's' : ''} ouverte{openRfqs.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.title}>{t('rfq.title')}</Text>
+          <Text style={styles.headerSub}>{openRfqs.length} {t('rfq.openRequests')}</Text>
         </View>
       </View>
 
@@ -127,19 +130,19 @@ export default function RfqScreen() {
           style={[styles.tab, activeRfqTab === 'disponibles' && styles.tabActive]}
           onPress={() => setActiveRfqTab('disponibles')}
         >
-          <Text style={[styles.tabText, activeRfqTab === 'disponibles' && styles.tabTextActive]}>Disponibles</Text>
+          <Text style={[styles.tabText, activeRfqTab === 'disponibles' && styles.tabTextActive]}>{t('rfq.available')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeRfqTab === 'propositions' && styles.tabActive]}
           onPress={() => setActiveRfqTab('propositions')}
         >
-          <Text style={[styles.tabText, activeRfqTab === 'propositions' && styles.tabTextActive]}>Propositions ({myQuotes.length})</Text>
+          <Text style={[styles.tabText, activeRfqTab === 'propositions' && styles.tabTextActive]}>{t('rfq.proposals')} ({myQuotes.length})</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeRfqTab === 'acceptees' && styles.tabActive]}
           onPress={() => setActiveRfqTab('acceptees')}
         >
-          <Text style={[styles.tabText, activeRfqTab === 'acceptees' && styles.tabTextActive]}>Acceptées ({acceptedQuotes.length})</Text>
+          <Text style={[styles.tabText, activeRfqTab === 'acceptees' && styles.tabTextActive]}>{t('rfq.accepted')} ({acceptedQuotes.length})</Text>
         </TouchableOpacity>
       </View>
 
@@ -161,29 +164,29 @@ export default function RfqScreen() {
               <View style={styles.rfqHeader}>
                 <View style={styles.rfqStore}>
                   <FontAwesome name="building" size={14} color={T.textMuted} />
-                  <Text style={styles.storeName}>{rfq.store?.name || 'Café inconnu'}</Text>
+                  <Text style={styles.storeName}>{rfq.store?.name || t('rfq.unknownStore')}</Text>
                 </View>
                 {quoteStatus === 'ACCEPTED' && (
                   <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(34,172,56,0.15)', borderColor: 'rgba(34,172,56,0.3)' }]}>
                     <FontAwesome name="check-circle" size={10} color={T.success} />
-                    <Text style={[styles.badgeSubmittedText, { color: T.success }]}>Acceptée</Text>
+                    <Text style={[styles.badgeSubmittedText, { color: T.success }]}>{t('rfq.accepted')}</Text>
                   </View>
                 )}
                 {quoteStatus === 'REJECTED' && (
                   <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(230,69,69,0.1)', borderColor: 'rgba(230,69,69,0.25)' }]}>
                     <FontAwesome name="times-circle" size={10} color={T.primary} />
-                    <Text style={[styles.badgeSubmittedText, { color: T.primary }]}>Refusée</Text>
+                    <Text style={[styles.badgeSubmittedText, { color: T.primary }]}>{t('rfq.rejected')}</Text>
                   </View>
                 )}
                 {quoteStatus === 'PENDING' && rfq.hasSubmittedQuote && (
                   <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(255,149,0,0.1)', borderColor: 'rgba(255,149,0,0.25)' }]}>
                     <FontAwesome name="clock-o" size={10} color={T.warning} />
-                    <Text style={[styles.badgeSubmittedText, { color: T.warning }]}>En attente</Text>
+                    <Text style={[styles.badgeSubmittedText, { color: T.warning }]}>{t('rfq.pending')}</Text>
                   </View>
                 )}
                 {!rfq.hasSubmittedQuote && expired && (
                   <View style={[styles.badgeSubmitted, { backgroundColor: 'rgba(100,100,100,0.15)', borderColor: T.textMuted }]}>
-                    <Text style={[styles.badgeSubmittedText, { color: T.textMuted }]}>Expiré</Text>
+                    <Text style={[styles.badgeSubmittedText, { color: T.textMuted }]}>{t('rfq.expired')}</Text>
                   </View>
                 )}
               </View>
@@ -203,7 +206,7 @@ export default function RfqScreen() {
                 {rfq.quantity && (
                   <View style={styles.metaItem}>
                     <FontAwesome name="shopping-cart" size={11} color={T.textMuted} />
-                    <Text style={styles.metaText}>Qté: {rfq.quantity}</Text>
+                    <Text style={styles.metaText}>{t('rfq.qty')}: {rfq.quantity}</Text>
                   </View>
                 )}
               </View>
@@ -211,10 +214,10 @@ export default function RfqScreen() {
               <View style={styles.rfqFooter}>
                 <View style={styles.footerLeft}>
                   {rfq.budget && (
-                    <Text style={styles.budgetText}>Budget: {Number(rfq.budget).toFixed(3)} DT</Text>
+                    <Text style={styles.budgetText}>{t('rfq.budget')}: {Number(rfq.budget).toFixed(3)} DT</Text>
                   )}
                   {rfq.myQuote && (
-                    <Text style={styles.myQuoteText}>Mon offre: {Number(rfq.myQuote.price).toFixed(3)} DT</Text>
+                    <Text style={styles.myQuoteText}>{t('rfq.myOffer')}: {Number(rfq.myQuote.price).toFixed(3)} DT</Text>
                   )}
                 </View>
                 <Text style={styles.deadline}>
@@ -229,7 +232,7 @@ export default function RfqScreen() {
           <View style={styles.emptyState}>
             <FontAwesome name="file-text" size={50} color="rgba(255,255,255,0.06)" />
             <Text style={styles.emptyText}>
-              {activeRfqTab === 'disponibles' ? "Aucune demande de devis pour le moment" : activeRfqTab === 'acceptees' ? "Aucune proposition acceptée" : "Vous n'avez pas encore soumis de proposition"}
+              {activeRfqTab === 'disponibles' ? t('rfq.emptyAvailable') : activeRfqTab === 'acceptees' ? t('rfq.emptyAccepted') : t('rfq.emptyMyProposals')}
             </Text>
           </View>
         )}
@@ -243,7 +246,7 @@ export default function RfqScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>Soumettre un devis</Text>
+                <Text style={styles.modalTitle}>{t('rfq.submitQuote')}</Text>
                 <Text style={styles.modalSub}>{selectedRfq?.title}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsModalVisible(false)}>
@@ -254,28 +257,28 @@ export default function RfqScreen() {
             <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
               {selectedRfq?.description && (
                 <View style={styles.rfqDetailCard}>
-                  <Text style={styles.detailLabel}>Description</Text>
+                  <Text style={styles.detailLabel}>{t('catalog.description')}</Text>
                   <Text style={styles.detailText}>{selectedRfq.description}</Text>
                 </View>
               )}
 
               <View style={styles.detailRow}>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Budget indiqué</Text>
-                  <Text style={styles.detailValue}>{selectedRfq?.budget ? `${Number(selectedRfq.budget).toFixed(3)} DT` : 'Non spécifié'}</Text>
+                  <Text style={styles.detailLabel}>{t('rfq.budgetLabel')}</Text>
+                  <Text style={styles.detailValue}>{selectedRfq?.budget ? `${Number(selectedRfq.budget).toFixed(3)} DT` : t('rfq.notSpecified')}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Quantité</Text>
+                  <Text style={styles.detailLabel}>{t('rfq.quantity')}</Text>
                   <Text style={styles.detailValue}>{selectedRfq?.quantity || 'N/A'}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Client</Text>
+                  <Text style={styles.detailLabel}>{t('rfq.client')}</Text>
                   <Text style={styles.detailValue}>{selectedRfq?.store?.name || '—'}</Text>
                 </View>
               </View>
 
               <View style={styles.formSection}>
-                <Text style={styles.formLabel}>Prix proposé (DT) *</Text>
+                <Text style={styles.formLabel}>{t('rfq.proposedPrice')}</Text>
                 <TextInput
                   style={styles.formInput}
                   value={quotePrice}
@@ -287,13 +290,13 @@ export default function RfqScreen() {
               </View>
 
               <View style={styles.formSection}>
-                <Text style={styles.formLabel}>Notes / Délai de livraison</Text>
+                <Text style={styles.formLabel}>{t('rfq.notes')}</Text>
                 <TextInput
                   style={[styles.formInput, styles.formInputMultiline]}
                   value={quoteNotes}
                   onChangeText={setQuoteNotes}
                   multiline
-                  placeholder="Ajoutez des détails sur votre offre..."
+                  placeholder={t('rfq.notesPlaceholder')}
                   placeholderTextColor={T.textDim}
                 />
               </View>
@@ -308,7 +311,7 @@ export default function RfqScreen() {
                 ) : (
                   <FontAwesome name="send" size={18} color="#fff" style={{ marginRight: 10 }} />
                 )}
-                <Text style={styles.submitBtnText}>{submitting ? 'Envoi en cours...' : 'Envoyer la proposition'}</Text>
+                <Text style={styles.submitBtnText}>{submitting ? t('rfq.sending') : t('rfq.sendProposal')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

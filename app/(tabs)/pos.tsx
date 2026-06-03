@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { Colors } from '@/constants/Colors';
+import { useT } from '@/constants/translations';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,6 +36,7 @@ export default function PosScreen() {
   const [storeId, setStoreId] = useState('1');
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
+  const t = useT();
 
   useEffect(() => {
     AuthService.getSession().then(s => { 
@@ -345,7 +347,7 @@ export default function PosScreen() {
              <Text style={styles.headerTitle}>{tableId}</Text>
            </TouchableOpacity>
         ) : (
-           <Text style={styles.headerTitle}>Point de Vente</Text>
+           <Text style={styles.headerTitle}>{t('pos.title')}</Text>
         )}
         <TouchableOpacity onPress={handleLock} style={styles.lockBtn}>
           <FontAwesome name="lock" size={24} color={Colors.danger} />
@@ -422,7 +424,7 @@ export default function PosScreen() {
           <RNView style={styles.cartSheet}>
             {/* Sheet header */}
             <RNView style={styles.cartHeader}>
-              <RNText style={styles.cartTitle}>{tableId ? `🛒 Addition ${tableId}` : '🛒 Panier'}</RNText>
+              <RNText style={styles.cartTitle}>{tableId ? `🛒 ${t('pos.table')} ${tableId}` : `🛒 ${t('pos.cart')}`}</RNText>
               <TouchableOpacity onPress={() => setCartOpen(false)}>
                 <FontAwesome name="close" size={22} color="#94a3b8" />
               </TouchableOpacity>
@@ -461,7 +463,7 @@ export default function PosScreen() {
                   <RNText style={styles.totalValue}>{totalHT.toFixed(3)} DT</RNText>
                 </RNView>
                 <RNView style={styles.totalRow}>
-                  <RNText style={styles.totalLabel}>TVA (19%)</RNText>
+                  <RNText style={styles.totalLabel}>{t('pos.tax')}</RNText>
                   <RNText style={styles.totalValue}>{totalTax.toFixed(3)} DT</RNText>
                 </RNView>
                 <RNView style={[styles.totalRow, styles.totalRowBig]}>

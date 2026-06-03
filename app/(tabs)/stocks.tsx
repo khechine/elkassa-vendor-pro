@@ -5,6 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useT } from '@/constants/translations';
 
 import { useLocalSearchParams } from 'expo-router';
 
@@ -44,6 +45,8 @@ export default function StocksScreen() {
   const [formRecipe, setFormRecipe] = useState<any[]>([]); // { stockItemId, name, quantity, unit }
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [showUnitSelect, setShowUnitSelect] = useState(false); // Bottom sheet visibility
+
+  const t = useT();
 
   const fetchData = async (currentStoreId: string) => {
     try {
@@ -87,7 +90,7 @@ export default function StocksScreen() {
   };
 
   const handleSaveCategory = async () => {
-    if (!formName) return Alert.alert("Erreur", "Le nom est requis.");
+    if (!formName) return Alert.alert(t('general.error'), t('validation.nameRequired'));
     try {
       const payload = {
         name: formName,
@@ -106,26 +109,26 @@ export default function StocksScreen() {
       resetForm();
       onRefresh();
     } catch (error) {
-      Alert.alert("Erreur", "Impossible de sauvegarder la catégorie.");
+      Alert.alert(t('general.error'), t('stocks.saveCategoryError'));
     }
   };
 
   const handleDeleteCategory = (id: string) => {
-    Alert.alert("Confirmation", "Supprimer cette catégorie et tous ses articles ?", [
-      { text: "Annuler", style: "cancel" },
-      { text: "Supprimer", style: "destructive", onPress: async () => {
+    Alert.alert(t('general.confirm'), t('stocks.deleteCategoryConfirm'), [
+      { text: t('general.cancel'), style: "cancel" },
+      { text: t('general.delete'), style: "destructive", onPress: async () => {
         try {
           await ApiService.delete(`/management/categories/${id}`);
           onRefresh();
         } catch (error) {
-          Alert.alert("Erreur", "Suppression impossible.");
+          Alert.alert(t('general.error'), t('general.deleteError'));
         }
       }}
     ]);
   };
 
   const handleSaveItem = async () => {
-    if (!formName) return Alert.alert("Erreur", "Le nom est requis.");
+    if (!formName) return Alert.alert(t('general.error'), t('validation.nameRequired'));
     const isProduct = activeTab === 'PRODUCTS';
     const endpoint = isProduct ? '/management/products' : '/management/stock';
     
@@ -163,20 +166,20 @@ export default function StocksScreen() {
       resetForm();
       onRefresh();
     } catch (error) {
-      Alert.alert("Erreur", "Sauvegarde article impossible.");
+      Alert.alert(t('general.error'), t('stocks.saveItemError'));
     }
   };
 
   const handleDeleteItem = (id: string) => {
     const endpoint = activeTab === 'PRODUCTS' ? '/management/products' : '/management/stock';
-    Alert.alert("Confirmation", "Supprimer cet article ?", [
-      { text: "Annuler", style: "cancel" },
-      { text: "Supprimer", style: "destructive", onPress: async () => {
+    Alert.alert(t('general.confirm'), t('stocks.deleteItemConfirm'), [
+      { text: t('general.cancel'), style: "cancel" },
+      { text: t('general.delete'), style: "destructive", onPress: async () => {
         try {
           await ApiService.delete(`${endpoint}/${id}`);
           onRefresh();
         } catch (error) {
-          Alert.alert("Erreur", "Suppression impossible.");
+          Alert.alert(t('general.error'), t('general.deleteError'));
         }
       }}
     ]);
@@ -228,10 +231,10 @@ export default function StocksScreen() {
     <View style={styles.container}>
       <View style={styles.tabContainer}>
         <TouchableOpacity style={[styles.tab, activeTab === 'PRODUCTS' && styles.activeTab]} onPress={() => { setActiveTab('PRODUCTS'); setSelectedCategory(null); setSearch(''); }}>
-          <Text style={[styles.tabText, activeTab === 'PRODUCTS' && styles.activeTabText]}>Catalogue</Text>
+          <Text style={[styles.tabText, activeTab === 'PRODUCTS' && styles.activeTabText]}>{t('stocks.catalog')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, activeTab === 'MATERIALS' && styles.activeTab]} onPress={() => { setActiveTab('MATERIALS'); setSelectedCategory(null); setSearch(''); }}>
-          <Text style={[styles.tabText, activeTab === 'MATERIALS' && styles.activeTabText]}>Matière Première</Text>
+          <Text style={[styles.tabText, activeTab === 'MATERIALS' && styles.activeTabText]}>{t('stocks.rawMaterial')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -244,12 +247,12 @@ export default function StocksScreen() {
               </TouchableOpacity>
               <View style={{ backgroundColor: 'transparent', marginLeft: 15 }}>
                  <Text style={styles.drillDownTitle}>{selectedCategory.name}</Text>
-                 <Text style={styles.drillDownSub}>Gestion du Catalogue</Text>
+                 <Text style={styles.drillDownSub}>{t('stocks.catalogManagement')}</Text>
               </View>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollBody}>
-              <Text style={styles.mgmtSectionTitle}>PRODUITS DANS CETTE CATÉGORIE</Text>
+              <Text style={styles.mgmtSectionTitle}>{t('stocks.productsInCategory')}</Text>
               {products
                 .filter(s => selectedCategory?.id === 'UNCATEGORIZED' ? !s.categoryId : s.categoryId === selectedCategory?.id)
                 .map((item, idx) => (
@@ -266,7 +269,7 @@ export default function StocksScreen() {
                         setFormUnit(item.unit?.name || item.unit || 'UN');
                         setFormRecipe((item.recipeItems || []).map((r: any) => ({
                             stockItemId: r.stockItemId,
-                            name: r.stockItem?.name || 'Ingrédient',
+                            name: r.stockItem?.name || t('stocks.ingredient'),
                             quantity: String(r.quantity),
                             unit: r.stockItem?.unit?.name || r.stockItem?.unit || 'UN'
                         })));
@@ -291,7 +294,7 @@ export default function StocksScreen() {
                 onPress={() => { resetForm(); setIsItemModalVisible(true); }}
               >
                 <FontAwesome name="plus" size={16} color="#ffffff" style={{ marginRight: 8 }} />
-                <Text style={styles.addItemText}>Ajouter un Produit</Text>
+                <Text style={styles.addItemText}>{t('stocks.addProduct')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -300,7 +303,7 @@ export default function StocksScreen() {
             <View style={styles.searchBar}>
               <FontAwesome name="search" size={16} color="#94a3b8" style={{ marginRight: 10 }} />
               <TextInput 
-                placeholder="Chercher un produit..." 
+                placeholder={t('stocks.searchProduct')} 
                 placeholderTextColor="#94a3b8"
                 style={styles.searchInput}
                 value={search}
@@ -310,7 +313,7 @@ export default function StocksScreen() {
 
             {search.length > 0 ? (
               <>
-                <Text style={styles.mgmtSectionTitle}>RÉSULTATS DE RECHERCHE</Text>
+                <Text style={styles.mgmtSectionTitle}>{t('stocks.searchResults')}</Text>
                 {searchedItems.map((item, idx) => (
                   <TouchableOpacity 
                     key={idx} 
@@ -325,7 +328,7 @@ export default function StocksScreen() {
                         setFormUnit(item.unit?.name || item.unit || 'UN');
                         setFormRecipe((item.recipeItems || []).map((r: any) => ({
                             stockItemId: r.stockItemId,
-                            name: r.stockItem?.name || 'Ingrédient',
+                            name: r.stockItem?.name || t('stocks.ingredient'),
                             quantity: String(r.quantity),
                             unit: r.stockItem?.unit?.name || r.stockItem?.unit || 'UN'
                         })));
@@ -345,7 +348,7 @@ export default function StocksScreen() {
               </>
             ) : (
               <>
-                <Text style={styles.sectionTitle}>Mes Catégories</Text>
+                <Text style={styles.sectionTitle}>{t('stocks.myCategories')}</Text>
                 <View style={styles.categoryList}>
                   {displayCategories.map((cat: any, i: number) => (
                     <TouchableOpacity key={i} style={[styles.categoryCard, styles.glassCard]} onPress={() => setSelectedCategory(cat)}>
@@ -354,7 +357,7 @@ export default function StocksScreen() {
                       </View>
                       <View style={styles.catInfo}>
                         <Text style={styles.catTitle}>{cat.name.toUpperCase()}</Text>
-                        <Text style={styles.catSubtitle}>{cat.itemCount} PRODUITS</Text>
+                        <Text style={styles.catSubtitle}>{cat.itemCount} {t('stocks.products')}</Text>
                       </View>
                       <View style={styles.catActions}>
                          <TouchableOpacity style={styles.actionBtn} onPress={(e) => { e.stopPropagation(); setEditingCategory(cat); setFormName(cat.name); setFormIcon(cat.icon || '📦'); setIsCategoryModalVisible(true); }}>
@@ -367,16 +370,16 @@ export default function StocksScreen() {
                     </TouchableOpacity>
                   ))}
                   {uncategorizedItems.length > 0 && (
-                    <TouchableOpacity style={[styles.categoryCard, styles.glassCard]} onPress={() => setSelectedCategory({ id: 'UNCATEGORIZED', name: 'Non classés', icon: '📁' })}>
+                    <TouchableOpacity style={[styles.categoryCard, styles.glassCard]} onPress={() => setSelectedCategory({ id: 'UNCATEGORIZED', name: t('stocks.uncategorized'), icon: '📁' })}>
                       <View style={[styles.catIconContainer, { backgroundColor: 'rgba(148, 163, 184, 0.1)' }]}><Text style={styles.catEmoji}>📁</Text></View>
-                      <View style={styles.catInfo}><Text style={styles.catTitle}>NON CLASSÉS</Text><Text style={styles.catSubtitle}>{uncategorizedItems.length} PRODUITS</Text></View>
+                      <View style={styles.catInfo}><Text style={styles.catTitle}>{t('stocks.uncategorized')}</Text><Text style={styles.catSubtitle}>{uncategorizedItems.length} {t('stocks.products')}</Text></View>
                       <FontAwesome name="chevron-right" size={14} color="#475569" style={{ marginRight: 15 }} />
                     </TouchableOpacity>
                   )}
                 </View>
                 <TouchableOpacity style={styles.addItemBtn} onPress={() => { resetForm(); setIsCategoryModalVisible(true); }}>
                   <FontAwesome name="plus-circle" size={20} color="#ffffff" style={{ marginRight: 10 }} />
-                  <Text style={styles.addItemText}>Nouvelle Catégorie</Text>
+                  <Text style={styles.addItemText}>{t('stocks.newCategory')}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -387,7 +390,7 @@ export default function StocksScreen() {
           <View style={styles.searchBar}>
             <FontAwesome name="search" size={16} color="#94a3b8" style={{ marginRight: 10 }} />
             <TextInput 
-              placeholder="Chercher une matière première..." 
+              placeholder={t('stocks.searchMaterial')} 
               placeholderTextColor="#94a3b8"
               style={styles.searchInput}
               value={search}
@@ -395,7 +398,7 @@ export default function StocksScreen() {
             />
           </View>
 
-          <Text style={styles.sectionTitle}>Stock des Matières Premières</Text>
+          <Text style={styles.sectionTitle}>{t('stocks.materialStock')}</Text>
           {searchedItems.map((item, idx) => (
             <TouchableOpacity 
               key={idx} 
@@ -411,7 +414,7 @@ export default function StocksScreen() {
             >
               <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemRef}>{`Coût: ${Number(item.cost || 0)} DT`}</Text>
+                <Text style={styles.itemRef}>{`${t('stocks.cost')}: ${Number(item.cost || 0)} DT`}</Text>
               </View>
               <View style={styles.qtyBadge}>
                 <Text style={styles.qtyText}>{item.quantity || 0}</Text>
@@ -425,7 +428,7 @@ export default function StocksScreen() {
             onPress={() => { resetForm(); setIsItemModalVisible(true); }}
           >
             <FontAwesome name="plus" size={16} color="#ffffff" style={{ marginRight: 8 }} />
-            <Text style={styles.addItemText}>Ajouter une Matière Première</Text>
+            <Text style={styles.addItemText}>{t('stocks.addMaterial')}</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -436,20 +439,20 @@ export default function StocksScreen() {
         <View style={styles.modalOverlay}>
             <View style={[styles.modalSheet, { height: '80%' }]}>
                 <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>{editingItem ? 'Editer' : 'Nouvel'} Article</Text>
+                    <Text style={styles.modalTitle}>{editingItem ? t('stocks.edit') : t('stocks.new')} {t('stocks.article')}</Text>
                     <TouchableOpacity onPress={() => setIsItemModalVisible(false)}><FontAwesome name="times" size={20} color="#fff" /></TouchableOpacity>
                 </View>
                 <ScrollView style={{ padding: 20 }}>
-                    <Text style={styles.inputLabel}>Nom de l'article</Text>
-                    <TextInput style={styles.modalInput} value={formName} onChangeText={setFormName} placeholder="Nom..." placeholderTextColor="#475569" />
+                    <Text style={styles.inputLabel}>{t('stocks.itemName')}</Text>
+                    <TextInput style={styles.modalInput} value={formName} onChangeText={setFormName} placeholder={t('stocks.namePlaceholder')} placeholderTextColor="#475569" />
                     
                     <View style={{ flexDirection: 'row', gap: 15, backgroundColor: 'transparent' }}>
                         <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                            <Text style={styles.inputLabel}>Quantité Stock</Text>
+                            <Text style={styles.inputLabel}>{t('stocks.stockQuantity')}</Text>
                             <TextInput style={styles.modalInput} value={formQty} onChangeText={setFormQty} keyboardType="numeric" placeholder="0" placeholderTextColor="#475569" />
                         </View>
                         <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                            <Text style={styles.inputLabel}>Unité</Text>
+                            <Text style={styles.inputLabel}>{t('stocks.unit')}</Text>
                             <TouchableOpacity 
                                 style={styles.selectField}
                                 onPress={() => setShowUnitSelect(true)}
@@ -462,7 +465,7 @@ export default function StocksScreen() {
 
                     <View style={{ flexDirection: 'row', gap: 15, backgroundColor: 'transparent' }}>
                         <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                            <Text style={styles.inputLabel}>{activeTab === 'PRODUCTS' ? 'Prix de Vente (DT)' : 'Coût / Achat (DT)'}</Text>
+                            <Text style={styles.inputLabel}>{activeTab === 'PRODUCTS' ? t('stocks.sellPrice') : t('stocks.costPrice')}</Text>
                             <TextInput 
                                 style={[styles.modalInput, activeTab === 'PRODUCTS' ? { color: '#10b981', fontWeight: 'bold' } : {}]} 
                                 value={activeTab === 'PRODUCTS' ? formPrice : formCost} 
@@ -474,7 +477,7 @@ export default function StocksScreen() {
                         </View>
                         {activeTab === 'PRODUCTS' && (
                             <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                                <Text style={styles.inputLabel}>TVA %</Text>
+                                <Text style={styles.inputLabel}>{t('stocks.tva')}</Text>
                                 <TextInput style={styles.modalInput} value={formTVA} onChangeText={setFormTVA} keyboardType="numeric" placeholder="0" placeholderTextColor="#475569" />
                             </View>
                         )}
@@ -482,28 +485,28 @@ export default function StocksScreen() {
 
                     {activeTab === 'PRODUCTS' && (
                         <View style={{ marginTop: 10, padding: 15, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' }}>
-                            <Text style={[styles.inputLabel, { color: Colors.primary }]}>RECOUVREMENT (RECETTE)</Text>
-                            <Text style={{ color: '#64748b', fontSize: 11, marginBottom: 10 }}>Ingrédients déduits lors de la vente.</Text>
+                            <Text style={[styles.inputLabel, { color: Colors.primary }]}>{t('stocks.recipeTitle')}</Text>
+                            <Text style={{ color: '#64748b', fontSize: 11, marginBottom: 10 }}>{t('stocks.recipeDescription')}</Text>
                             
                             {formRecipe.length > 0 ? formRecipe.map((ing, ri) => (
                                 <View key={ri} style={styles.recipeRow}>
                                     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                                         <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>{ing.name}</Text>
-                                        <Text style={{ color: '#94a3b8', fontSize: 11 }}>Quantité: {ing.quantity} {ing.unit}</Text>
+                                        <Text style={{ color: '#94a3b8', fontSize: 11 }}>{t('stocks.quantity')}: {ing.quantity} {ing.unit}</Text>
                                     </View>
                                     <TouchableOpacity onPress={() => setFormRecipe(prev => prev.filter((_, idx) => idx !== ri))}>
                                         <FontAwesome name="trash" size={16} color={Colors.danger} />
                                     </TouchableOpacity>
                                 </View>
                             )) : (
-                                <Text style={{ color: '#475569', fontSize: 13, fontStyle: 'italic', marginBottom: 15, textAlign: 'center' }}>Aucun ingrédient.</Text>
+                                <Text style={{ color: '#475569', fontSize: 13, fontStyle: 'italic', marginBottom: 15, textAlign: 'center' }}>{t('stocks.noIngredients')}</Text>
                             )}
                             
                             <TouchableOpacity 
                               style={{ padding: 12, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, alignItems: 'center', marginTop: 5 }}
                               onPress={() => setAddingIngredient(true)}
                             >
-                                <Text style={{ color: Colors.primary, fontSize: 13, fontWeight: '700' }}>+ Ajouter un ingrédient</Text>
+                                <Text style={{ color: Colors.primary, fontSize: 13, fontWeight: '700' }}>{t('stocks.addIngredient')}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -514,7 +517,7 @@ export default function StocksScreen() {
                             <TouchableOpacity style={styles.modalBackdrop} onPress={() => setAddingIngredient(false)} />
                             <View style={[styles.modalSheet, { height: '60%' }]}>
                                 <View style={styles.modalHeader}>
-                                    <Text style={styles.modalTitle}>Choisir un ingrédient</Text>
+                                    <Text style={styles.modalTitle}>{t('stocks.chooseIngredient')}</Text>
                                     <TouchableOpacity onPress={() => setAddingIngredient(false)}><FontAwesome name="times" size={20} color="#fff" /></TouchableOpacity>
                                 </View>
                                 <ScrollView style={{ padding: 20 }}>
@@ -523,7 +526,7 @@ export default function StocksScreen() {
                                             key={sidx} 
                                             style={styles.selectableItem}
                                             onPress={() => {
-                                                const qty = prompt("Quantité pour une portion ?", "0.1");
+                                                const qty = prompt(t('stocks.portionPrompt'), "0.1");
                                                 if (qty && !isNaN(Number(qty))) {
                                                     setFormRecipe([...formRecipe, { stockItemId: si.id, name: si.name, quantity: qty, unit: si.unit?.name || si.unit || 'UN' }]);
                                                     setAddingIngredient(false);
@@ -531,22 +534,22 @@ export default function StocksScreen() {
                                             }}
                                         >
                                             <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>{si.name}</Text>
-                                            <Text style={{ color: '#94a3b8', fontSize: 12 }}>Stock actuel: {si.quantity} {si.unit?.name || si.unit || 'UN'}</Text>
+                                            <Text style={{ color: '#94a3b8', fontSize: 12 }}>{t('stocks.currentStock')}: {si.quantity} {si.unit?.name || si.unit || 'UN'}</Text>
                                         </TouchableOpacity>
                                     ))}
-                                    {stockItems.length === 0 && <Text style={{ color: '#94a3b8', textAlign: 'center' }}>Aucune matière première trouvée dans vos stocks.</Text>}
+                                    {stockItems.length === 0 && <Text style={{ color: '#94a3b8', textAlign: 'center' }}>{t('stocks.noMaterialFound')}</Text>}
                                 </ScrollView>
                             </View>
                         </View>
                     </Modal>
 
                     <TouchableOpacity style={styles.saveBtn} onPress={handleSaveItem}>
-                        <Text style={styles.saveBtnText}>Enregistrer</Text>
+                        <Text style={styles.saveBtnText}>{t('general.save')}</Text>
                     </TouchableOpacity>
                     
                     {editingItem && (
                         <TouchableOpacity style={{ marginTop: 15, alignItems: 'center', backgroundColor: 'transparent' }} onPress={() => handleDeleteItem(editingItem.id)}>
-                            <Text style={{ color: Colors.danger, fontWeight: '600' }}>Supprimer l'article</Text>
+                            <Text style={{ color: Colors.danger, fontWeight: '600' }}>{t('stocks.deleteItem')}</Text>
                         </TouchableOpacity>
                     )}
                 </ScrollView>
@@ -560,7 +563,7 @@ export default function StocksScreen() {
             <TouchableOpacity style={styles.modalBackdrop} onPress={() => setShowUnitSelect(false)} />
             <View style={[styles.modalSheet, { height: 'auto', borderTopRightRadius: 30, borderTopLeftRadius: 30 }]}>
                 <View style={[styles.modalHeader, { paddingBottom: 10 }]}>
-                    <Text style={styles.modalTitle}>Choisir l'unité</Text>
+                    <Text style={styles.modalTitle}>{t('stocks.chooseUnit')}</Text>
                     <TouchableOpacity onPress={() => setShowUnitSelect(false)}><FontAwesome name="times" size={20} color="#fff" /></TouchableOpacity>
                 </View>
                 <View style={{ paddingBottom: 30 }}>

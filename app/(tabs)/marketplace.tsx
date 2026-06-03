@@ -8,17 +8,18 @@ import { Text, View } from '@/components/Themed';
 import { Colors } from '@/constants/Colors';
 import { ApiService } from '@/services/api';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { t, useT } from '@/constants/translations';
 import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window');
 const BANNER_IMAGE = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1000';
 
 const CATEGORIES = [
-  { id: 'all', name: 'Tout', icon: 'th-large' },
-  { id: 'coffee', name: 'Café', icon: 'coffee' },
-  { id: 'equipment', name: 'Matériel', icon: 'wrench' },
-  { id: 'milk', name: 'Lait', icon: 'tint' },
-  { id: 'packaging', name: 'Emballage', icon: 'cube' },
+  { id: 'all', name: t('marketplace.all'), icon: 'th-large' },
+  { id: 'coffee', name: t('marketplace.coffee'), icon: 'coffee' },
+  { id: 'equipment', name: t('marketplace.equipment'), icon: 'wrench' },
+  { id: 'milk', name: t('marketplace.milk'), icon: 'tint' },
+  { id: 'packaging', name: t('marketplace.packaging'), icon: 'cube' },
 ];
 
 // ---------- theme tokens ----------
@@ -61,6 +62,8 @@ export default function MarketplaceScreen() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const t = useT();
 
   // Derived
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
@@ -171,8 +174,8 @@ export default function MarketplaceScreen() {
         {/* Header */}
         <View style={[styles.header, { backgroundColor: 'transparent' }]}>
           <View style={{ backgroundColor: 'transparent' }}>
-            <Text style={[styles.title, { color: T.text }]}>Marché B2B</Text>
-            <Text style={[styles.subtitle, { color: T.muted }]}>Trouvez vos fournitures</Text>
+            <Text style={[styles.title, { color: T.text }]}>{t('marketplace.title')}</Text>
+            <Text style={[styles.subtitle, { color: T.muted }]}>{t('marketplace.subtitle')}</Text>
           </View>
           <TouchableOpacity
             style={[styles.cartBtn, { backgroundColor: T.inputBg, borderColor: T.cardBorder }]}
@@ -191,7 +194,7 @@ export default function MarketplaceScreen() {
         <View style={[styles.searchBar, { backgroundColor: T.inputBg, borderColor: T.inputBorder }]}>
           <FontAwesome name="search" size={16} color={T.muted} style={{ marginRight: 12 }} />
           <TextInput
-            placeholder="Café, machines, emballages..."
+            placeholder={t('marketplace.searchPlaceholder')}
             placeholderTextColor={T.muted}
             style={[styles.searchInput, { color: T.text }]}
             value={search}
@@ -209,12 +212,12 @@ export default function MarketplaceScreen() {
           <Image source={{ uri: BANNER_IMAGE }} style={styles.bannerImg} />
           <View style={styles.bannerOverlay}>
             <View style={styles.bannerTagContainer}>
-              <Text style={styles.bannerTag}>🔥 OFFRE SPÉCIALE</Text>
+              <Text style={styles.bannerTag}>{t('marketplace.specialOffer')}</Text>
             </View>
-            <Text style={styles.bannerTitle}>Grains de Café Artisanaux</Text>
-            <Text style={styles.bannerSub}>-20% sur la gamme El Kassa</Text>
+            <Text style={styles.bannerTitle}>{t('marketplace.bannerTitle')}</Text>
+            <Text style={styles.bannerSub}>{t('marketplace.bannerSub')}</Text>
             <TouchableOpacity style={styles.bannerBtn}>
-              <Text style={styles.bannerBtnText}>Découvrir</Text>
+              <Text style={styles.bannerBtnText}>{t('marketplace.discover')}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -241,8 +244,8 @@ export default function MarketplaceScreen() {
         {!search && businessPacks.length > 0 && (
           <>
             <View style={[styles.sectionHeader, { backgroundColor: 'transparent' }]}>
-              <Text style={[styles.sectionTitle, { color: T.text }]}>Packs Business 🎁</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>Voir packs</Text></TouchableOpacity>
+              <Text style={[styles.sectionTitle, { color: T.text }]}>{t('marketplace.businessPacks')}</Text>
+              <TouchableOpacity><Text style={styles.seeAll}>{t('marketplace.seePacks')}</Text></TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 30 }} contentContainerStyle={{ paddingRight: 20 }}>
               {businessPacks.map((pack, i) => (
@@ -265,7 +268,7 @@ export default function MarketplaceScreen() {
                       style={styles.packAddBtn}
                       onPress={() => handleAddToCart(pack)}
                     >
-                      <Text style={styles.packAddBtnText}>+ Ajouter</Text>
+                      <Text style={styles.packAddBtnText}>{t('marketplace.add')}</Text>
                     </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
@@ -278,8 +281,8 @@ export default function MarketplaceScreen() {
         {!search && vendors.length > 0 && (
           <>
             <View style={[styles.sectionHeader, { backgroundColor: 'transparent' }]}>
-              <Text style={[styles.sectionTitle, { color: T.text }]}>Fournisseurs Vedettes</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>Voir tout</Text></TouchableOpacity>
+              <Text style={[styles.sectionTitle, { color: T.text }]}>{t('marketplace.featuredVendors')}</Text>
+              <TouchableOpacity><Text style={styles.seeAll}>{t('marketplace.seeAll')}</Text></TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 30 }} contentContainerStyle={{ paddingRight: 20 }}>
               {vendors.map((vendor, i) => (
@@ -300,14 +303,14 @@ export default function MarketplaceScreen() {
 
         {/* Product Grid */}
         <View style={[styles.sectionHeader, { backgroundColor: 'transparent' }]}>
-          <Text style={[styles.sectionTitle, { color: T.text }]}>{search ? 'Résultats' : 'Derniers Arrivages'}</Text>
-          {!search && <TouchableOpacity><Text style={styles.seeAll}>Voir tout</Text></TouchableOpacity>}
+          <Text style={[styles.sectionTitle, { color: T.text }]}>{search ? t('marketplace.results') : t('marketplace.newArrivals')}</Text>
+          {!search && <TouchableOpacity><Text style={styles.seeAll}>{t('marketplace.seeAll')}</Text></TouchableOpacity>}
         </View>
 
         {filteredProducts.length === 0 && (
           <View style={[styles.emptyState, { backgroundColor: T.inputBg }]}>
             <Text style={{ fontSize: 40 }}>🔍</Text>
-            <Text style={[styles.emptyText, { color: T.muted }]}>Aucun produit trouvé</Text>
+            <Text style={[styles.emptyText, { color: T.muted }]}>{t('catalog.noProducts')}</Text>
           </View>
         )}
 
@@ -368,21 +371,20 @@ export default function MarketplaceScreen() {
                       <Text style={{ fontSize: 70 }}>{getProductIcon(selectedProduct.name)}</Text>
                     )}
                   </View>
-                  <Text style={[styles.modalDescTitle, { color: T.text }]}>Description</Text>
+                  <Text style={[styles.modalDescTitle, { color: T.text }]}>{t('catalog.description')}</Text>
                   <Text style={[styles.modalDesc, { color: T.subtext }]}>
-                    Produit de haute qualité sélectionné pour les professionnels de la restauration.
-                    Idéal pour vos besoins professionnels quotidiens.
+                    {t('marketplace.productDescription')}
                   </Text>
                   <View style={[styles.modalPriceContainer, { backgroundColor: T.sectionBg }]}>
                     <View style={{ backgroundColor: 'transparent', flex: 1 }}>
-                      <Text style={[styles.modalPriceLabel, { color: T.muted }]}>Prix Unitaire</Text>
+                      <Text style={[styles.modalPriceLabel, { color: T.muted }]}>{t('marketplace.unitPrice')}</Text>
                       <Text style={styles.modalPrice}>{formatPrice(selectedProduct.price)} DT</Text>
                     </View>
                     <TouchableOpacity
                       style={styles.modalBuyBtn}
                       onPress={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }}
                     >
-                      <Text style={styles.modalBuyBtnText}>Ajouter au panier</Text>
+                      <Text style={styles.modalBuyBtnText}>{t('marketplace.addToCart')}</Text>
                     </TouchableOpacity>
                   </View>
                 </ScrollView>
@@ -399,8 +401,8 @@ export default function MarketplaceScreen() {
           <View style={[styles.modalSheet, { backgroundColor: T.bg, borderColor: T.cardBorder, height: '80%' }]}>
             <View style={[styles.modalHeader, { borderBottomColor: T.cardBorder }]}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={[styles.modalTitle, { color: T.text }]}>Mon Panier 🛒</Text>
-                <Text style={[styles.modalSub, { color: T.muted }]}>{cartCount} article{cartCount > 1 ? 's' : ''}</Text>
+                <Text style={[styles.modalTitle, { color: T.text }]}>{t('marketplace.myCart')}</Text>
+                <Text style={[styles.modalSub, { color: T.muted }]}>{cartCount} {t('marketplace.items')}</Text>
               </View>
               <TouchableOpacity onPress={() => setCartOpen(false)}>
                 <FontAwesome name="times-circle" size={24} color={T.muted} />
@@ -410,12 +412,12 @@ export default function MarketplaceScreen() {
             {cartItems.length === 0 ? (
               <View style={styles.emptyCart}>
                 <Text style={{ fontSize: 50, marginBottom: 16 }}>🛒</Text>
-                <Text style={[styles.emptyText, { color: T.muted }]}>Votre panier est vide</Text>
+                <Text style={[styles.emptyText, { color: T.muted }]}>{t('marketplace.emptyCart')}</Text>
                 <TouchableOpacity
                   style={[styles.continueBtn, { borderColor: Colors.primary }]}
                   onPress={() => setCartOpen(false)}
                 >
-                  <Text style={[styles.continueBtnText, { color: Colors.primary }]}>Continuer mes achats</Text>
+                  <Text style={[styles.continueBtnText, { color: Colors.primary }]}>{t('marketplace.continueShopping')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -455,14 +457,14 @@ export default function MarketplaceScreen() {
 
                 <View style={[styles.cartFooter, { backgroundColor: T.bg, borderTopColor: T.cardBorder }]}>
                   <View style={{ backgroundColor: 'transparent' }}>
-                    <Text style={[styles.totalLabel, { color: T.muted }]}>Total</Text>
+                    <Text style={[styles.totalLabel, { color: T.muted }]}>{t('general.total')}</Text>
                     <Text style={styles.totalAmount}>{cartTotal.toFixed(2)} DT</Text>
                   </View>
                   <TouchableOpacity
                     style={styles.orderBtn}
                     onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setCartOpen(false); }}
                   >
-                    <Text style={styles.orderBtnText}>Commander</Text>
+                    <Text style={styles.orderBtnText}>{t('marketplace.order')}</Text>
                   </TouchableOpacity>
                 </View>
               </>

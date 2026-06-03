@@ -5,6 +5,7 @@ import { Text, View } from '@/components/Themed';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useT } from '@/constants/translations';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
 
@@ -51,6 +52,8 @@ export default function MessagingScreen() {
     });
   }, [fetchConversations]);
 
+  const t = useT();
+
   const fetchMessages = async (otherUserId: string) => {
     setLoadingMessages(true);
     try {
@@ -89,10 +92,10 @@ export default function MessagingScreen() {
         fetchConversations();
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 200);
       } else {
-        showAlert({ title: 'Erreur', message: res?.error || 'Message non envoyé.', type: 'error' });
+        showAlert({ title: t('general.error'), message: res?.error || t('messaging.notSent'), type: 'error' });
       }
     } catch (error) {
-      showAlert({ title: 'Erreur', message: 'Échec de l\'envoi.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('messaging.sendFailed'), type: 'error' });
     } finally {
       setSending(false);
     }
@@ -121,8 +124,8 @@ export default function MessagingScreen() {
     <View style={[styles.container, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]}>
       <View style={styles.header}>
         <View style={{ backgroundColor: 'transparent' }}>
-          <Text style={styles.title}>Messages</Text>
-          <Text style={styles.headerSub}>{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.title}>{t('messaging.title')}</Text>
+          <Text style={styles.headerSub}>{conversations.length} {t('messaging.conversations')}</Text>
         </View>
       </View>
 
@@ -136,8 +139,8 @@ export default function MessagingScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <FontAwesome name="envelope" size={50} color="rgba(255,255,255,0.06)" />
-            <Text style={styles.emptyText}>Aucune conversation</Text>
-            <Text style={styles.emptySubtext}>Les messages apparaîtront ici</Text>
+            <Text style={styles.emptyText}>{t('messaging.noConversations')}</Text>
+            <Text style={styles.emptySubtext}>{t('messaging.messagesWillAppear')}</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -147,12 +150,12 @@ export default function MessagingScreen() {
             </View>
             <View style={styles.convInfo}>
               <View style={styles.convTop}>
-                <Text style={styles.convName} numberOfLines={1}>{item.otherUser?.name || 'Client'}</Text>
+                <Text style={styles.convName} numberOfLines={1}>{item.otherUser?.name || t('messaging.client')}</Text>
                 <Text style={styles.convTime}>{formatTime(item.lastMessage?.createdAt)}</Text>
               </View>
               <View style={styles.convBottom}>
                 <Text style={styles.convLastMsg} numberOfLines={1}>
-                  {item.lastMessage?.senderId === userId ? 'Vous: ' : ''}{item.lastMessage?.content || ''}
+                  {item.lastMessage?.senderId === userId ? t('messaging.you') : ''}{item.lastMessage?.content || ''}
                 </Text>
                 {item.unread && <View style={styles.unreadDot} />}
               </View>
@@ -169,7 +172,7 @@ export default function MessagingScreen() {
               <View style={{ backgroundColor: 'transparent', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <FontAwesome name="user-circle" size={32} color={T.textMuted} />
                 <View style={{ backgroundColor: 'transparent' }}>
-                  <Text style={styles.chatTitle}>{selectedUser?.name || 'Client'}</Text>
+                  <Text style={styles.chatTitle}>{selectedUser?.name || t('messaging.client')}</Text>
                 </View>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsChatModalVisible(false)}>
@@ -195,7 +198,7 @@ export default function MessagingScreen() {
                     </View>
                   ) : (
                     <View style={{ padding: 40, alignItems: 'center', backgroundColor: 'transparent' }}>
-                      <Text style={{ color: T.textMuted, fontSize: 13 }}>Aucun message. Envoyez le premier message.</Text>
+                      <Text style={{ color: T.textMuted, fontSize: 13 }}>{t('messaging.noMessages')}</Text>
                     </View>
                   )
                 }
@@ -210,7 +213,7 @@ export default function MessagingScreen() {
                           </View>
                         )}
                         <Text style={[styles.bubbleText, own && { color: '#fff' }]}>
-                          {item.isFiltered ? '📢 Message filtré (coordonnées masquées)' : item.filteredContent || item.content}
+                          {item.isFiltered ? t('messaging.filteredMessage') : item.filteredContent || item.content}
                         </Text>
                         <Text style={[styles.bubbleTime, own && { color: 'rgba(255,255,255,0.5)' }]}>
                           {formatTime(item.createdAt)}
@@ -226,7 +229,7 @@ export default function MessagingScreen() {
                   style={styles.messageInput}
                   value={newMessage}
                   onChangeText={setNewMessage}
-                  placeholder="Votre message..."
+                  placeholder={t('messaging.placeholder')}
                   placeholderTextColor={T.textDim}
                   multiline
                   maxLength={500}

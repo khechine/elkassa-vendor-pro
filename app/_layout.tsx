@@ -12,6 +12,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { AuthService } from '@/services/auth';
 import { AlertProvider } from '@/components/AlertContext';
 import { ThemeContextProvider, useThemeContext } from '@/components/ThemeContext';
+import { LocaleContextProvider } from '@/components/LocaleContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -79,7 +80,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <ThemeContextProvider><RootLayoutNav /></ThemeContextProvider>;
+  return (
+    <LocaleContextProvider>
+      <ThemeContextProvider><RootLayoutNav /></ThemeContextProvider>
+    </LocaleContextProvider>
+  );
 }
 
 function RootLayoutNav() {

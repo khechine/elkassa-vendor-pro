@@ -7,6 +7,7 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
+import { useT } from '@/constants/translations';
 
 export default function CatalogueScreen() {
   const T = useTheme();
@@ -15,6 +16,7 @@ export default function CatalogueScreen() {
   const insets = useSafeAreaInsets();
   const [activeSubTab, setActiveSubTab] = useState<'produits' | 'packs'>('produits');
   const [vendorId, setVendorId] = useState<string | null>(null);
+  const t = useT();
 
   // Products state
   const [products, setProducts] = useState<any[]>([]);
@@ -119,9 +121,9 @@ export default function CatalogueScreen() {
       setUpsellText('');
       setUpsellTargetSearch('');
       await fetchUpsells(editingProduct.id);
-      showAlert({ title: 'Succès', message: 'Upsell ajouté.', type: 'success' });
+      showAlert({ title: t('general.success'), message: t('catalog.upsellAdded'), type: 'success' });
     } catch {
-      showAlert({ title: 'Erreur', message: 'Impossible d\'ajouter l\'upsell.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.upsellError'), type: 'error' });
     }
   };
 
@@ -130,9 +132,9 @@ export default function CatalogueScreen() {
     try {
       await ApiService.delete(`/management/vendor/upsells/${upsellId}`);
       if (editingProduct) await fetchUpsells(editingProduct.id);
-      showAlert({ title: 'Supprimé', message: 'Upsell supprimé.', type: 'success' });
+      showAlert({ title: t('general.success'), message: t('catalog.upsellDeleted'), type: 'success' });
     } catch {
-      showAlert({ title: 'Erreur', message: 'Échec de la suppression.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.deleteError'), type: 'error' });
     } finally {
       setDeletingUpsellId(null);
     }
@@ -186,7 +188,7 @@ export default function CatalogueScreen() {
   };
 
   const saveProduct = async () => {
-    if (!pName) return showAlert({ title: 'Erreur', message: 'Le nom est requis.', type: 'error' });
+    if (!pName) return showAlert({ title: t('general.error'), message: t('catalog.nameRequired'), type: 'error' });
     try {
       const payload: any = {
         name: pName, description: pDesc, price: Number(pPrice), minOrderQty: Number(pMinQty),
@@ -201,25 +203,25 @@ export default function CatalogueScreen() {
       }
       setProdModalVisible(false);
       if (vendorId) fetchProducts(vendorId);
-      showAlert({ title: 'Succès', message: editingProduct ? 'Produit mis à jour.' : 'Produit créé.', type: 'success' });
+      showAlert({ title: t('general.success'), message: editingProduct ? t('catalog.productUpdated') : t('catalog.productCreated'), type: 'success' });
     } catch {
-      showAlert({ title: 'Erreur', message: 'Sauvegarde impossible.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.saveError'), type: 'error' });
     }
   };
 
   const deleteProduct = (item: any) => {
     showAlert({
-      title: 'Supprimer', message: `Supprimer "${item.productStandard?.name || item.name}" ?`, type: 'warning',
+      title: t('catalog.delete'), message: `${t('catalog.delete')} "${item.productStandard?.name || item.name}" ?`, type: 'warning',
       buttons: [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Supprimer', style: 'destructive', onPress: async () => {
+        { text: t('catalog.cancel'), style: 'cancel' },
+        { text: t('catalog.delete'), style: 'destructive', onPress: async () => {
           setDeletingProductId(item.id);
           try {
             await ApiService.delete(`/management/marketplace/products/${item.id}`);
             if (vendorId) fetchProducts(vendorId);
-            showAlert({ title: 'Supprimé', message: 'Produit supprimé.', type: 'success' });
+            showAlert({ title: t('general.success'), message: t('catalog.productDeleted'), type: 'success' });
           } catch {
-            showAlert({ title: 'Erreur', message: 'Échec de la suppression.', type: 'error' });
+            showAlert({ title: t('general.error'), message: t('catalog.deleteError'), type: 'error' });
           } finally { setDeletingProductId(null); }
         }}
       ]
@@ -245,8 +247,8 @@ export default function CatalogueScreen() {
   };
 
   const saveBundle = async () => {
-    if (!bName) return showAlert({ title: 'Erreur', message: 'Le nom du pack est requis.', type: 'error' });
-    if (bItems.length === 0) return showAlert({ title: 'Erreur', message: 'Ajoutez au moins un produit.', type: 'error' });
+    if (!bName) return showAlert({ title: t('general.error'), message: t('catalog.bundleNameRequired'), type: 'error' });
+    if (bItems.length === 0) return showAlert({ title: t('general.error'), message: t('catalog.addProductRequired'), type: 'error' });
     try {
       const payload = { name: bName, description: bDesc, price: Number(bPrice), items: bItems, images: bImages, isActive: true, isFeatured: bFeatured };
       if (editingBundle) {
@@ -256,25 +258,25 @@ export default function CatalogueScreen() {
       }
       setBundleModalVisible(false);
       if (vendorId) fetchBundles(vendorId);
-      showAlert({ title: 'Succès', message: editingBundle ? 'Pack mis à jour.' : 'Pack créé.', type: 'success' });
+      showAlert({ title: t('general.success'), message: editingBundle ? t('catalog.bundleUpdated') : t('catalog.bundleCreated'), type: 'success' });
     } catch {
-      showAlert({ title: 'Erreur', message: 'Sauvegarde impossible.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.saveError'), type: 'error' });
     }
   };
 
   const deleteBundle = (bundle: any) => {
     showAlert({
-      title: 'Supprimer', message: `Supprimer "${bundle.name}" ?`, type: 'warning',
+      title: t('catalog.delete'), message: `${t('catalog.delete')} "${bundle.name}" ?`, type: 'warning',
       buttons: [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Supprimer', style: 'destructive', onPress: async () => {
+        { text: t('catalog.cancel'), style: 'cancel' },
+        { text: t('catalog.delete'), style: 'destructive', onPress: async () => {
           setDeletingBundleId(bundle.id);
           try {
             await ApiService.delete(`/management/vendor/bundles/${bundle.id}`);
             if (vendorId) fetchBundles(vendorId);
-            showAlert({ title: 'Supprimé', message: 'Pack supprimé.', type: 'success' });
+            showAlert({ title: t('general.success'), message: t('catalog.bundleDeleted'), type: 'success' });
           } catch {
-            showAlert({ title: 'Erreur', message: 'Échec de la suppression.', type: 'error' });
+            showAlert({ title: t('general.error'), message: t('catalog.deleteError'), type: 'error' });
           } finally { setDeletingBundleId(null); }
         }}
       ]
@@ -283,14 +285,14 @@ export default function CatalogueScreen() {
 
   const pickImage = async (cb: (uri: string) => void) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return showAlert({ title: 'Accès refusé', message: 'Accès photos requis.', type: 'warning' });
+    if (status !== 'granted') return showAlert({ title: t('general.accessDenied'), message: t('catalog.photosRequired'), type: 'warning' });
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.7 });
     if (!result.canceled) uploadFile(result.assets[0].uri, cb);
   };
 
   const takePhoto = async (cb: (uri: string) => void) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') return showAlert({ title: 'Erreur', message: 'Accès caméra refusé.', type: 'error' });
+    if (status !== 'granted') return showAlert({ title: t('general.error'), message: t('catalog.cameraDenied'), type: 'error' });
     const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
     if (!result.canceled) uploadFile(result.assets[0].uri, cb);
   };
@@ -318,14 +320,14 @@ export default function CatalogueScreen() {
       if (res?.url) cb(res.url);
       else throw new Error('No URL');
     } catch {
-      showAlert({ title: 'Erreur', message: 'Échec de l\'upload.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.uploadError'), type: 'error' });
     } finally { setUploading(false); }
   };
 
   const STOCK_OPTIONS = [
-    { value: 'IN_STOCK', label: 'En Stock', color: '#22ac38' },
-    { value: 'LOW_STOCK', label: 'Stock Faible', color: '#ff9500' },
-    { value: 'OUT_OF_STOCK', label: 'Rupture', color: '#e64545' },
+    { value: 'IN_STOCK', label: t('catalog.inStock'), color: '#22ac38' },
+    { value: 'LOW_STOCK', label: t('catalog.lowStock'), color: '#ff9500' },
+    { value: 'OUT_OF_STOCK', label: t('catalog.outOfStock'), color: '#e64545' },
   ];
 
   const filteredProducts = products.filter(p => {
@@ -335,7 +337,7 @@ export default function CatalogueScreen() {
 
   const getProductName = (pid: string) => {
     const prod = products.find(p => p.id === pid);
-    return prod?.productStandard?.name || prod?.name || 'Inconnu';
+    return prod?.productStandard?.name || prod?.name || t('catalog.unknown');
   };
 
   const filteredVendorProducts = products.filter(p => !bItems.find(it => it.vendorProductId === p.id) && (p.productStandard?.name || p.name || '').toLowerCase().includes(bProductSearch.toLowerCase()));
@@ -360,8 +362,8 @@ export default function CatalogueScreen() {
               <Text style={{ color: s.color, fontSize: 9, fontWeight: '800' }}>{s.label}</Text>
             </View>
           ))}
-          {p.isFeatured && <View style={[styles.tag, { borderColor: T.warning }]}><Text style={{ color: T.warning, fontSize: 9, fontWeight: '800' }}>En avant</Text></View>}
-          {p.isFlashSale && <View style={[styles.tag, { borderColor: T.primary }]}><Text style={{ color: T.primary, fontSize: 9, fontWeight: '800' }}>Flash</Text></View>}
+          {p.isFeatured && <View style={[styles.tag, { borderColor: T.warning }]}><Text style={{ color: T.warning, fontSize: 9, fontWeight: '800' }}>{t('catalog.featured')}</Text></View>}
+          {p.isFlashSale && <View style={[styles.tag, { borderColor: T.primary }]}><Text style={{ color: T.primary, fontSize: 9, fontWeight: '800' }}>{t('catalog.flash')}</Text></View>}
         </View>
 
       </View>
@@ -378,7 +380,7 @@ export default function CatalogueScreen() {
       <View style={{ flex: 1, backgroundColor: 'transparent' }}>
         <Text style={{ color: T.white, fontWeight: '700', fontSize: 12 }}>{u.targetProduct?.name || getProductName(u.targetProductId)}</Text>
         <Text style={{ color: T.textMuted, fontSize: 10 }}>
-          Qté: {u.quantity || 1}{u.discountPercent ? ` | -${u.discountPercent}%` : ''}{u.text ? ` | "${u.text}"` : ''}
+          {t('catalog.qty')}: {u.quantity || 1}{u.discountPercent ? ` | -${u.discountPercent}%` : ''}{u.text ? ` | "${u.text}"` : ''}
         </Text>
       </View>
       <TouchableOpacity onPress={() => deleteUpsell(u.id)} style={{ padding: 4 }}>
@@ -401,8 +403,8 @@ export default function CatalogueScreen() {
       <View style={styles.itemInfo}>
         <Text style={styles.itemName} numberOfLines={1}>{b.name}</Text>
         <Text style={styles.itemPrice}>{Number(b.price).toFixed(3)} DT</Text>
-        <Text style={styles.itemMeta}>{b.items?.length || 0} produit{(b.items?.length || 0) !== 1 ? 's' : ''}</Text>
-        {b.isFeatured && <View style={[styles.tag, { borderColor: T.primary, alignSelf: 'flex-start', marginTop: 4 }]}><Text style={{ color: T.primary, fontSize: 9, fontWeight: '800' }}>En avant</Text></View>}
+        <Text style={styles.itemMeta}>{b.items?.length || 0} {b.items?.length !== 1 ? t('catalog.products').toLowerCase() : t('catalog.product_singular')}</Text>
+        {b.isFeatured && <View style={[styles.tag, { borderColor: T.primary, alignSelf: 'flex-start', marginTop: 4 }]}><Text style={{ color: T.primary, fontSize: 9, fontWeight: '800' }}>{t('catalog.featured')}</Text></View>}
       </View>
       <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteBundle(b)}>
         {deletingBundleId === b.id ? <ActivityIndicator size="small" color={T.primary} /> : <FontAwesome name="trash" size={14} color="rgba(230,69,69,0.5)" />}
@@ -415,25 +417,25 @@ export default function CatalogueScreen() {
     <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <View style={styles.header}>
         <View style={{ backgroundColor: 'transparent' }}>
-          <Text style={styles.title}>Catalogue</Text>
+          <Text style={styles.title}>{t('tabs.catalogue')}</Text>
           <Text style={styles.headerSub}>
-            {activeSubTab === 'produits' ? `${filteredProducts.length} produit${filteredProducts.length !== 1 ? 's' : ''}` : `${bundles.length} pack${bundles.length !== 1 ? 's' : ''}`}
+            {activeSubTab === 'produits' ? `${filteredProducts.length} ${filteredProducts.length !== 1 ? t('catalog.products').toLowerCase() : t('catalog.product_singular')}` : `${bundles.length} ${bundles.length !== 1 ? t('catalog.bundles').toLowerCase() : t('catalog.bundle_singular')}`}
           </Text>
         </View>
         <TouchableOpacity style={styles.addBtn} onPress={() => activeSubTab === 'produits' ? openProductModal() : openBundleModal()}>
           <FontAwesome name="plus" size={14} color="#fff" />
-          <Text style={styles.addBtnText}> {activeSubTab === 'produits' ? 'Produit' : 'Pack'}</Text>
+          <Text style={styles.addBtnText}> {activeSubTab === 'produits' ? t('catalog.product_singular') : t('catalog.bundle_singular')}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.subTabRow}>
         <TouchableOpacity style={[styles.subTab, activeSubTab === 'produits' && styles.subTabActive]} onPress={() => setActiveSubTab('produits')}>
           <FontAwesome name="cube" size={13} color={activeSubTab === 'produits' ? T.primary : T.textDim} style={{ marginRight: 6 }} />
-          <Text style={[styles.subTabText, activeSubTab === 'produits' && styles.subTabTextActive]}>Produits</Text>
+          <Text style={[styles.subTabText, activeSubTab === 'produits' && styles.subTabTextActive]}>{t('catalog.products')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.subTab, activeSubTab === 'packs' && styles.subTabActive]} onPress={() => setActiveSubTab('packs')}>
           <FontAwesome name="gift" size={13} color={activeSubTab === 'packs' ? T.primary : T.textDim} style={{ marginRight: 6 }} />
-          <Text style={[styles.subTabText, activeSubTab === 'packs' && styles.subTabTextActive]}>Packs</Text>
+          <Text style={[styles.subTabText, activeSubTab === 'packs' && styles.subTabTextActive]}>{t('catalog.bundles')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -446,7 +448,7 @@ export default function CatalogueScreen() {
           <>
             <View style={styles.searchBar}>
               <FontAwesome name="search" size={14} color={T.textDim} />
-              <TextInput style={styles.searchInput} value={productSearch} onChangeText={setProductSearch} placeholder="Chercher un produit..." placeholderTextColor={T.textDim} />
+              <TextInput style={styles.searchInput} value={productSearch} onChangeText={setProductSearch} placeholder={t('catalog.search')} placeholderTextColor={T.textDim} />
               {productSearch ? <TouchableOpacity onPress={() => setProductSearch('')}><FontAwesome name="times-circle" size={16} color={T.textMuted} /></TouchableOpacity> : null}
             </View>
             {loadingProducts ? (
@@ -457,7 +459,7 @@ export default function CatalogueScreen() {
             {!loadingProducts && filteredProducts.length === 0 && (
               <View style={styles.emptyState}>
                 <FontAwesome name="cube" size={40} color="rgba(255,255,255,0.06)" />
-                <Text style={styles.emptyText}>{productSearch ? 'Aucun produit trouvé' : 'Ajoutez votre premier produit'}</Text>
+                <Text style={styles.emptyText}>{productSearch ? t('catalog.noProducts') : t('catalog.addFirstProduct')}</Text>
               </View>
             )}
           </>
@@ -473,7 +475,7 @@ export default function CatalogueScreen() {
             {!loadingBundles && bundles.length === 0 && (
               <View style={styles.emptyState}>
                 <FontAwesome name="gift" size={40} color="rgba(255,255,255,0.06)" />
-                <Text style={styles.emptyText}>Aucun pack créé</Text>
+                <Text style={styles.emptyText}>{t('catalog.noBundles')}</Text>
               </View>
             )}
           </>
@@ -487,20 +489,20 @@ export default function CatalogueScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>{editingProduct ? 'Modifier' : 'Nouveau'} Produit</Text>
+                <Text style={styles.modalTitle}>{editingProduct ? t('catalog.edit') : t('catalog.newProduct')} {t('catalog.product_singular')}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setProdModalVisible(false)}><FontAwesome name="times" size={18} color={T.textDim} /></TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-              <Text style={styles.formSection}>Informations</Text>
-              <TextInput style={styles.input} value={pName} onChangeText={setPName} placeholder="Nom du produit *" placeholderTextColor={T.textDim} />
-              <TextInput style={[styles.input, { height: 80 }]} value={pDesc} onChangeText={setPDesc} multiline placeholder="Description..." placeholderTextColor={T.textDim} />
+              <Text style={styles.formSection}>{t('catalog.productInfo')}</Text>
+              <TextInput style={styles.input} value={pName} onChangeText={setPName} placeholder={t('catalog.productName') + ' *'} placeholderTextColor={T.textDim} />
+              <TextInput style={[styles.input, { height: 80 }]} value={pDesc} onChangeText={setPDesc} multiline placeholder={t('catalog.description') + '...'} placeholderTextColor={T.textDim} />
               <View style={{ flexDirection: 'row', gap: 12, backgroundColor: 'transparent' }}>
                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                  <TextInput style={styles.input} value={pPrice} onChangeText={setPPrice} keyboardType="numeric" placeholder="Prix (DT)" placeholderTextColor={T.textDim} />
+                  <TextInput style={styles.input} value={pPrice} onChangeText={setPPrice} keyboardType="numeric" placeholder={t('catalog.price')} placeholderTextColor={T.textDim} />
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                  <TextInput style={styles.input} value={pDiscount} onChangeText={setPDiscount} keyboardType="numeric" placeholder="Prix promo" placeholderTextColor={T.textDim} />
+                  <TextInput style={styles.input} value={pDiscount} onChangeText={setPDiscount} keyboardType="numeric" placeholder={t('catalog.promoPrice')} placeholderTextColor={T.textDim} />
                 </View>
               </View>
               <View style={{ flexDirection: 'row', gap: 12, backgroundColor: 'transparent' }}>
@@ -510,7 +512,7 @@ export default function CatalogueScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-              <Text style={[styles.formSection, { marginTop: 20 }]}>Photos</Text>
+              <Text style={[styles.formSection, { marginTop: 20 }]}>{t('catalog.photos')}</Text>
               {pImages.length > 0 && (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
                   <View style={{ flexDirection: 'row', gap: 8, backgroundColor: 'transparent' }}>
@@ -530,30 +532,30 @@ export default function CatalogueScreen() {
               )}
               <View style={{ flexDirection: 'row', gap: 10, backgroundColor: 'transparent', marginBottom: 10 }}>
                 <TouchableOpacity style={[styles.imgBtn, { backgroundColor: 'rgba(34,172,56,0.1)' }]} onPress={() => pickImage((uri) => setPImages([...pImages, uri]))}>
-                  <FontAwesome name="photo" size={16} color={T.success} /><Text style={{ color: T.success, fontSize: 12, fontWeight: '700' }}> Galerie</Text>
+                  <FontAwesome name="photo" size={16} color={T.success} /><Text style={{ color: T.success, fontSize: 12, fontWeight: '700' }}> {t('catalog.gallery')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.imgBtn, { backgroundColor: 'rgba(20,112,204,0.1)' }]} onPress={() => takePhoto((uri) => setPImages([...pImages, uri]))}>
-                  <FontAwesome name="camera" size={16} color="#1470cc" /><Text style={{ color: '#1470cc', fontSize: 12, fontWeight: '700' }}> Caméra</Text>
+                  <FontAwesome name="camera" size={16} color="#1470cc" /><Text style={{ color: '#1470cc', fontSize: 12, fontWeight: '700' }}> {t('catalog.camera')}</Text>
                 </TouchableOpacity>
                 {pImages.length > 0 && (
                   <TouchableOpacity style={[styles.imgBtn, { backgroundColor: 'rgba(230,69,69,0.1)' }]} onPress={() => setPImages([])}>
-                    <FontAwesome name="trash" size={16} color={T.primary} /><Text style={{ color: T.primary, fontSize: 12, fontWeight: '700' }}> Tout effacer</Text>
+                    <FontAwesome name="trash" size={16} color={T.primary} /><Text style={{ color: T.primary, fontSize: 12, fontWeight: '700' }}> {t('catalog.clearAll')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={[styles.formSection, { marginTop: 20 }]}>Mise en avant</Text>
+              <Text style={[styles.formSection, { marginTop: 20 }]}>{t('catalog.marketing')}</Text>
               <View style={{ flexDirection: 'row', gap: 12, backgroundColor: 'transparent' }}>
                 <TouchableOpacity style={[styles.upsellCard, pFeatured && { borderColor: T.warning }]} onPress={() => setPFeatured(!pFeatured)}>
                   <FontAwesome name="star" size={20} color={pFeatured ? T.warning : T.textMuted} />
-                  <Text style={{ color: pFeatured ? T.warning : T.textDim, fontWeight: '700', fontSize: 12 }}>En avant</Text>
+                  <Text style={{ color: pFeatured ? T.warning : T.textDim, fontWeight: '700', fontSize: 12 }}>{t('catalog.featured')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.upsellCard, pFlash && { borderColor: T.primary }]} onPress={() => setPFlash(!pFlash)}>
                   <FontAwesome name="bolt" size={20} color={pFlash ? T.primary : T.textMuted} />
-                  <Text style={{ color: pFlash ? T.primary : T.textDim, fontWeight: '700', fontSize: 12 }}>Flash</Text>
+                  <Text style={{ color: pFlash ? T.primary : T.textDim, fontWeight: '700', fontSize: 12 }}>{t('catalog.flash')}</Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={[styles.formSection, { marginTop: 20 }]}>Upsells</Text>
+              <Text style={[styles.formSection, { marginTop: 20 }]}>{t('catalog.upsells')}</Text>
               {loadingUpsells ? (
                 <ActivityIndicator size="small" color={T.primary} />
               ) : (
@@ -565,14 +567,14 @@ export default function CatalogueScreen() {
                   onPress={() => setShowUpsellForm(true)}
                 >
                   <FontAwesome name="plus" size={12} color={T.primary} />
-                  <Text style={{ color: T.primary, fontWeight: '700', fontSize: 13 }}>Ajouter une recommandation</Text>
+                  <Text style={{ color: T.primary, fontWeight: '700', fontSize: 13 }}>{t('catalog.addRecommendation')}</Text>
                 </TouchableOpacity>
               ) : (
                 <View style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: 14, borderRadius: 16, marginTop: 8, gap: 10 }}>
-                  <Text style={{ color: T.textDim, fontSize: 12, fontWeight: '700' }}>Produit à proposer</Text>
+                  <Text style={{ color: T.textDim, fontSize: 12, fontWeight: '700' }}>{t('catalog.suggestProduct')}</Text>
                   <View style={styles.searchBar}>
                     <FontAwesome name="search" size={14} color={T.textDim} />
-                    <TextInput style={styles.searchInput} value={upsellTargetSearch} onChangeText={setUpsellTargetSearch} placeholder="Sélectionner un produit..." placeholderTextColor={T.textDim} />
+                    <TextInput style={styles.searchInput} value={upsellTargetSearch} onChangeText={setUpsellTargetSearch} placeholder={t('catalog.selectProduct')} placeholderTextColor={T.textDim} />
                   </View>
                   {products
                     .filter(p => p.id !== editingProduct?.id && !pUpsells.find((u: any) => u.targetProductId === p.id) && (p.productStandard?.name || p.name || '').toLowerCase().includes(upsellTargetSearch.toLowerCase()))
@@ -587,22 +589,22 @@ export default function CatalogueScreen() {
                     <>
                       <View style={{ flexDirection: 'row', gap: 10, backgroundColor: 'transparent' }}>
                         <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                          <Text style={{ color: T.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 }}>Quantité</Text>
+                          <Text style={{ color: T.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 }}>{t('catalog.quantity')}</Text>
                           <TextInput style={[styles.input, { height: 42 }]} value={upsellQty} onChangeText={setUpsellQty} keyboardType="numeric" placeholder="1" placeholderTextColor={T.textDim} />
                         </View>
                         <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                          <Text style={{ color: T.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 }}>Remise (%)</Text>
+                          <Text style={{ color: T.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 }}>{t('catalog.discount')}</Text>
                           <TextInput style={[styles.input, { height: 42 }]} value={upsellDiscount} onChangeText={setUpsellDiscount} keyboardType="numeric" placeholder="0" placeholderTextColor={T.textDim} />
                         </View>
                       </View>
-                      <Text style={{ color: T.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 }}>Message d'accroche (Optionnel)</Text>
-                      <TextInput style={[styles.input, { height: 42 }]} value={upsellText} onChangeText={setUpsellText} placeholder="Ex: Profitez d'une remise !" placeholderTextColor={T.textDim} />
+                      <Text style={{ color: T.textMuted, fontSize: 11, fontWeight: '600', marginBottom: 4 }}>{t('catalog.pitchMessage')}</Text>
+                      <TextInput style={[styles.input, { height: 42 }]} value={upsellText} onChangeText={setUpsellText} placeholder={t('catalog.pitchExample')} placeholderTextColor={T.textDim} />
                       <View style={{ flexDirection: 'row', gap: 10, backgroundColor: 'transparent' }}>
                         <TouchableOpacity style={{ flex: 1, padding: 12, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center' }} onPress={() => { setShowUpsellForm(false); setUpsellTargetId(null); setUpsellTargetSearch(''); }}>
-                          <Text style={{ color: T.textDim, fontWeight: '700', fontSize: 13 }}>Annuler</Text>
+                          <Text style={{ color: T.textDim, fontWeight: '700', fontSize: 13 }}>{t('catalog.cancel')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={{ flex: 1, padding: 12, borderRadius: 12, backgroundColor: T.primary, alignItems: 'center' }} onPress={addUpsell}>
-                          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Ajouter</Text>
+                          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>{t('catalog.add')}</Text>
                         </TouchableOpacity>
                       </View>
                     </>
@@ -611,7 +613,7 @@ export default function CatalogueScreen() {
               )}
 
               <TouchableOpacity style={styles.saveBtn} onPress={saveProduct}>
-                <Text style={styles.saveBtnText}>{editingProduct ? 'Mettre à jour' : 'Ajouter le produit'}</Text>
+                <Text style={styles.saveBtnText}>{editingProduct ? t('catalog.update') : t('catalog.addProduct')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -624,17 +626,17 @@ export default function CatalogueScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>{editingBundle ? 'Modifier' : 'Nouveau'} Pack</Text>
+                <Text style={styles.modalTitle}>{editingBundle ? t('catalog.edit') : t('catalog.newBundle')} {t('catalog.bundle_singular')}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setBundleModalVisible(false)}><FontAwesome name="times" size={18} color={T.textDim} /></TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-              <Text style={styles.formSection}>Informations</Text>
-              <TextInput style={styles.input} value={bName} onChangeText={setBName} placeholder="Nom du pack *" placeholderTextColor={T.textDim} />
-              <TextInput style={[styles.input, { height: 80 }]} value={bDesc} onChangeText={setBDesc} multiline placeholder="Description..." placeholderTextColor={T.textDim} />
-              <TextInput style={styles.input} value={bPrice} onChangeText={setBPrice} keyboardType="numeric" placeholder="Prix de vente (DT)" placeholderTextColor={T.textDim} />
+              <Text style={styles.formSection}>{t('catalog.productInfo')}</Text>
+              <TextInput style={styles.input} value={bName} onChangeText={setBName} placeholder={t('catalog.bundleName') + ' *'} placeholderTextColor={T.textDim} />
+              <TextInput style={[styles.input, { height: 80 }]} value={bDesc} onChangeText={setBDesc} multiline placeholder={t('catalog.description') + '...'} placeholderTextColor={T.textDim} />
+              <TextInput style={styles.input} value={bPrice} onChangeText={setBPrice} keyboardType="numeric" placeholder={t('catalog.bundleSellingPrice')} placeholderTextColor={T.textDim} />
 
-              <Text style={styles.formSection}>Photos</Text>
+              <Text style={styles.formSection}>{t('catalog.photos')}</Text>
               {bImages.length > 0 && (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
                   <View style={{ flexDirection: 'row', gap: 8, backgroundColor: 'transparent' }}>
@@ -654,19 +656,19 @@ export default function CatalogueScreen() {
               )}
               <View style={{ flexDirection: 'row', gap: 10, backgroundColor: 'transparent', marginBottom: 10 }}>
                 <TouchableOpacity style={[styles.imgBtn, { backgroundColor: 'rgba(34,172,56,0.1)' }]} onPress={() => pickImage((uri) => setBImages([...bImages, uri]))}>
-                  <FontAwesome name="photo" size={16} color={T.success} /><Text style={{ color: T.success, fontSize: 12, fontWeight: '700' }}> Galerie</Text>
+                  <FontAwesome name="photo" size={16} color={T.success} /><Text style={{ color: T.success, fontSize: 12, fontWeight: '700' }}> {t('catalog.gallery')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.imgBtn, { backgroundColor: 'rgba(20,112,204,0.1)' }]} onPress={() => takePhoto((uri) => setBImages([...bImages, uri]))}>
-                  <FontAwesome name="camera" size={16} color="#1470cc" /><Text style={{ color: '#1470cc', fontSize: 12, fontWeight: '700' }}> Caméra</Text>
+                  <FontAwesome name="camera" size={16} color="#1470cc" /><Text style={{ color: '#1470cc', fontSize: 12, fontWeight: '700' }}> {t('catalog.camera')}</Text>
                 </TouchableOpacity>
                 {bImages.length > 0 && (
                   <TouchableOpacity style={[styles.imgBtn, { backgroundColor: 'rgba(230,69,69,0.1)' }]} onPress={() => setBImages([])}>
-                    <FontAwesome name="trash" size={16} color={T.primary} /><Text style={{ color: T.primary, fontSize: 12, fontWeight: '700' }}> Tout effacer</Text>
+                    <FontAwesome name="trash" size={16} color={T.primary} /><Text style={{ color: T.primary, fontSize: 12, fontWeight: '700' }}> {t('catalog.clearAll')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
 
-              <Text style={styles.formSection}>Produits inclus ({bItems.length})</Text>
+              <Text style={styles.formSection}>{t('catalog.bundleProducts')} ({bItems.length})</Text>
               {bItems.map((item, idx) => (
                 <View key={idx} style={styles.bundleItemRow}>
                   <Text style={{ flex: 1, color: T.white, fontWeight: '600' }} numberOfLines={1}>{getProductName(item.vendorProductId)}</Text>
@@ -685,10 +687,10 @@ export default function CatalogueScreen() {
                 </View>
               ))}
               
-              <Text style={styles.formSection}>Ajouter un produit</Text>
+              <Text style={styles.formSection}>{t('catalog.addBundleProduct')}</Text>
               <View style={styles.searchBar}>
                 <FontAwesome name="search" size={14} color={T.textDim} />
-                <TextInput style={styles.searchInput} value={bProductSearch} onChangeText={setBProductSearch} placeholder="Chercher..." placeholderTextColor={T.textDim} />
+                <TextInput style={styles.searchInput} value={bProductSearch} onChangeText={setBProductSearch} placeholder={t('catalog.searchShort')} placeholderTextColor={T.textDim} />
               </View>
               {filteredVendorProducts.slice(0, 10).map(prod => (
                 <TouchableOpacity key={prod.id} style={styles.pickerItem} onPress={() => { setBItems([...bItems, { vendorProductId: prod.id, quantity: 1 }]); setBProductSearch(''); }}>
@@ -697,17 +699,17 @@ export default function CatalogueScreen() {
                 </TouchableOpacity>
               ))}
 
-              <Text style={[styles.formSection, { marginTop: 24 }]}>Mise en avant</Text>
+              <Text style={[styles.formSection, { marginTop: 24 }]}>{t('catalog.marketing')}</Text>
               <TouchableOpacity style={[styles.upsellCard, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]} onPress={() => setBFeatured(!bFeatured)}>
                 <View style={{ backgroundColor: 'transparent' }}>
-                  <Text style={{ color: T.white, fontWeight: '700', fontSize: 14 }}>En vedette</Text>
-                  <Text style={{ color: T.textMuted, fontSize: 11 }}>Afficher ce pack en premier</Text>
+                  <Text style={{ color: T.white, fontWeight: '700', fontSize: 14 }}>{t('catalog.featuredBundle')}</Text>
+                  <Text style={{ color: T.textMuted, fontSize: 11 }}>{t('catalog.showFirst')}</Text>
                 </View>
                 <FontAwesome name={bFeatured ? 'toggle-on' : 'toggle-off'} size={36} color={bFeatured ? T.primary : T.textMuted} />
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.saveBtn} onPress={saveBundle}>
-                <Text style={styles.saveBtnText}>{editingBundle ? 'Mettre à jour' : 'Créer le pack'}</Text>
+                <Text style={styles.saveBtnText}>{editingBundle ? t('catalog.update') : t('catalog.createBundle')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

@@ -6,6 +6,7 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import { useAlert } from '@/components/AlertContext';
+import { useT } from '../constants/translations';
 
 type PosStock = {
   id: string;
@@ -52,6 +53,7 @@ export default function FranchiseScreen() {
 
   const router = useRouter();
   const { showAlert } = useAlert();
+  const t = useT();
 
   const fetchData = async () => {
     try {
@@ -73,7 +75,7 @@ export default function FranchiseScreen() {
       }
     } catch (error) {
       console.error('Franchise POS fetch error:', error);
-      showAlert({ title: 'Erreur', message: 'Impossible de récupérer les dépôts.', type: 'error' });
+      showAlert({ title: t('franchise.error'), message: t('franchise.fetchError'), type: 'error' });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -91,7 +93,7 @@ export default function FranchiseScreen() {
 
   const handleAddPos = async () => {
     if (!posName.trim()) {
-      return showAlert({ title: 'Erreur', message: 'Le nom du point de vente est requis.', type: 'error' });
+      return showAlert({ title: t('franchise.error'), message: t('franchise.nameRequired'), type: 'error' });
     }
 
     try {
@@ -105,7 +107,7 @@ export default function FranchiseScreen() {
       const res = await ApiService.post('/api/v1/vendor/franchise/pos', payload);
       if (res && res.success) {
         Vibration.vibrate(15);
-        showAlert({ title: 'Succès', message: 'Point de vente créé avec succès.', type: 'success' });
+        showAlert({ title: t('franchise.success'), message: t('franchise.createSuccess'), type: 'success' });
         setIsAddPosModalVisible(false);
         // Reset form
         setPosName('');
@@ -115,14 +117,14 @@ export default function FranchiseScreen() {
         fetchData();
       }
     } catch (error) {
-      showAlert({ title: 'Erreur', message: 'Impossible de créer le point de vente.', type: 'error' });
+      showAlert({ title: t('franchise.error'), message: t('franchise.createError'), type: 'error' });
     }
   };
 
   const handleUpdatePosDetails = async () => {
     if (!selectedPos) return;
     if (!posName.trim()) {
-      return showAlert({ title: 'Erreur', message: 'Le nom du point de vente est requis.', type: 'error' });
+      return showAlert({ title: t('franchise.error'), message: t('franchise.nameRequired'), type: 'error' });
     }
 
     try {
@@ -137,12 +139,12 @@ export default function FranchiseScreen() {
       const res = await ApiService.put('/api/v1/vendor/franchise/pos', payload);
       if (res && res.success) {
         Vibration.vibrate(15);
-        showAlert({ title: 'Succès', message: 'Coordonnées du dépôt mises à jour.', type: 'success' });
+        showAlert({ title: t('franchise.success'), message: t('franchise.updateSuccess'), type: 'success' });
         setIsEditPosModalVisible(false);
         fetchData();
       }
     } catch (error) {
-      showAlert({ title: 'Erreur', message: 'Mise à jour impossible.', type: 'error' });
+      showAlert({ title: t('franchise.error'), message: t('franchise.updateError'), type: 'error' });
     }
   };
 
@@ -174,12 +176,12 @@ export default function FranchiseScreen() {
       const res = await ApiService.put('/api/v1/vendor/franchise/pos', payload);
       if (res && res.success) {
         Vibration.vibrate(15);
-        showAlert({ title: 'Succès', message: 'Inventaire mis à jour avec succès !', type: 'success' });
+        showAlert({ title: t('franchise.success'), message: t('franchise.inventoryUpdateSuccess'), type: 'success' });
         setIsStockModalVisible(false);
         fetchData();
       }
     } catch (error) {
-      showAlert({ title: 'Erreur', message: "Échec de l'enregistrement de l'inventaire.", type: 'error' });
+      showAlert({ title: t('franchise.error'), message: t('franchise.inventorySaveError'), type: 'error' });
     }
   };
 
@@ -205,7 +207,7 @@ export default function FranchiseScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#f59e0b" />
-        <Text style={styles.loadingText}>Chargement de vos franchises...</Text>
+        <Text style={styles.loadingText}>{t('franchise.loading')}</Text>
       </View>
     );
   }
@@ -217,7 +219,7 @@ export default function FranchiseScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <FontAwesome name="arrow-left" size={18} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Points de Vente & Dépôts</Text>
+        <Text style={styles.headerTitle}>{t('franchise.title')}</Text>
         <TouchableOpacity 
           style={styles.addBtn}
           onPress={() => {
@@ -238,16 +240,16 @@ export default function FranchiseScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f59e0b" />}
       >
         <View style={styles.summaryBar}>
-          <Text style={styles.summaryText}>{posList.length} Dépôt(s) actif(s)</Text>
-          <Text style={styles.summarySub}>Gérez vos points de distribution B2B et stocks d'expédition</Text>
+          <Text style={styles.summaryText}>{t('franchise.activeDepots', { count: posList.length })}</Text>
+          <Text style={styles.summarySub}>{t('franchise.subtitle')}</Text>
         </View>
 
         {posList.length === 0 && (
           <View style={styles.emptyState}>
             <FontAwesome name="building-o" size={48} color="#475569" style={{ marginBottom: 15 }} />
-            <Text style={styles.emptyText}>Aucun point de vente ou dépôt créé.</Text>
+            <Text style={styles.emptyText}>{t('franchise.empty')}</Text>
             <TouchableOpacity style={styles.createFirstBtn} onPress={() => setIsAddPosModalVisible(true)}>
-              <Text style={styles.createFirstBtnText}>Créer votre premier dépôt</Text>
+              <Text style={styles.createFirstBtnText}>{t('franchise.createFirst')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -267,7 +269,7 @@ export default function FranchiseScreen() {
                   </View>
                   <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                     <Text style={styles.posName}>{pos.name}</Text>
-                    <Text style={styles.posLoc}>{pos.city || 'Ville non renseignée'} — {pos.address || 'Sans adresse'}</Text>
+                    <Text style={styles.posLoc}>{pos.city || t('franchise.cityUnknown')} — {pos.address || t('franchise.noAddress')}</Text>
                   </View>
                   <FontAwesome name={isSelected ? "chevron-up" : "chevron-down"} size={14} color="#64748b" />
                 </View>
@@ -276,8 +278,8 @@ export default function FranchiseScreen() {
               {isSelected && (
                 <View style={styles.posDetailsContainer}>
                   <View style={styles.detailsRow}>
-                    <Text style={styles.detailLabel}>📞 Téléphone :</Text>
-                    <Text style={styles.detailValue}>{pos.phone || 'Non configuré'}</Text>
+                    <Text style={styles.detailLabel}>{t('franchise.phone')}</Text>
+                    <Text style={styles.detailValue}>{pos.phone || t('franchise.notConfigured')}</Text>
                   </View>
 
                   <View style={styles.actionRow}>
@@ -292,7 +294,7 @@ export default function FranchiseScreen() {
                       }}
                     >
                       <FontAwesome name="edit" size={14} color="#fff" style={{ marginRight: 6 }} />
-                      <Text style={styles.actionBtnText}>Coordonnées</Text>
+                      <Text style={styles.actionBtnText}>{t('franchise.coordinates')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity 
@@ -300,20 +302,20 @@ export default function FranchiseScreen() {
                       onPress={() => openStockModal(pos)}
                     >
                       <FontAwesome name="dropbox" size={14} color="#fff" style={{ marginRight: 6 }} />
-                      <Text style={styles.actionBtnText}>Ajuster le Stock</Text>
+                      <Text style={styles.actionBtnText}>{t('franchise.adjustStock')}</Text>
                     </TouchableOpacity>
                   </View>
 
                   {/* Stock List */}
-                  <Text style={styles.stockSectionTitle}>INVENTAIRE DU DÉPÔT</Text>
+                  <Text style={styles.stockSectionTitle}>{t('franchise.inventoryTitle')}</Text>
                   {pos.stocks.length === 0 ? (
-                    <Text style={styles.noStockText}>Aucun produit en stock actuellement.</Text>
+                    <Text style={styles.noStockText}>{t('franchise.noStock')}</Text>
                   ) : (
                     pos.stocks.map((stock) => (
                       <View key={stock.id} style={styles.stockRow}>
                         <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                           <Text style={styles.stockName}>{stock.productName}</Text>
-                          <Text style={styles.stockPrice}>{stock.price.toFixed(3)} DT / {stock.unit}</Text>
+                          <Text style={styles.stockPrice}>{stock.price.toFixed(3)} {t('franchise.currency')} / {stock.unit}</Text>
                         </View>
                         <View style={[styles.qtyBadge, stock.quantity < 10 && styles.qtyBadgeWarning]}>
                           <Text style={styles.qtyText}>
@@ -336,52 +338,71 @@ export default function FranchiseScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nouveau Point de Vente / Dépôt</Text>
+              <Text style={styles.modalTitle}>{t('franchise.newPos')}</Text>
               <TouchableOpacity onPress={() => setIsAddPosModalVisible(false)}>
                 <FontAwesome name="times" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={{ padding: 20 }}>
-              <Text style={styles.inputLabel}>Nom du Dépôt *</Text>
+              <Text style={styles.inputLabel}>{t('franchise.depotName')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posName} 
                 onChangeText={setPosName} 
-                placeholder="Ex: Dépôt Nord - Ariana..." 
+                placeholder={t('franchise.placeholderDepotName')}
                 placeholderTextColor="#64748b" 
               />
 
-              <Text style={styles.inputLabel}>Ville</Text>
+              <Text style={styles.inputLabel}>{t('franchise.city')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posCity} 
                 onChangeText={setPosCity} 
-                placeholder="Ex: Ariana, Tunis, Sfax..." 
+                placeholder={t('franchise.placeholderCity')}
                 placeholderTextColor="#64748b" 
               />
 
-              <Text style={styles.inputLabel}>Adresse Complète</Text>
+              <Text style={styles.inputLabel}>{t('franchise.fullAddress')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posAddress} 
                 onChangeText={setPosAddress} 
-                placeholder="Ex: Rte de la Soukra, Km 4..." 
+                placeholder={t('franchise.placeholderAddress')}
                 placeholderTextColor="#64748b" 
               />
 
-              <Text style={styles.inputLabel}>Téléphone</Text>
+              <Text style={styles.inputLabel}>{t('franchise.phone')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posPhone} 
                 onChangeText={setPosPhone} 
                 keyboardType="phone-pad"
-                placeholder="Ex: 71888999..." 
+                placeholder={t('franchise.placeholderPhone')}
+                placeholderTextColor="#64748b" 
+              />
+
+              <Text style={styles.inputLabel}>{t('franchise.fullAddress')}</Text>
+              <TextInput 
+                style={styles.modalInput} 
+                value={posAddress} 
+                onChangeText={setPosAddress} 
+                placeholder={t('franchise.placeholderAddress')}
+                placeholderTextColor="#64748b" 
+              />
+
+              <Text style={styles.inputLabel}>{t('franchise.phone')}</Text>
+              <TextInput 
+                style={styles.modalInput} 
+                value={posPhone} 
+                onChangeText={setPosPhone} 
+                keyboardType="phone-pad"
+                placeholder={t('franchise.placeholderPhone')}
                 placeholderTextColor="#64748b" 
               />
 
               <TouchableOpacity style={styles.submitBtn} onPress={handleAddPos}>
-                <Text style={styles.submitBtnText}>Créer le Dépôt</Text>
+                <Text style={styles.submitBtnText}>{t('franchise.createDepot')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -393,52 +414,52 @@ export default function FranchiseScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Modifier le Dépôt</Text>
+              <Text style={styles.modalTitle}>{t('franchise.editDepot')}</Text>
               <TouchableOpacity onPress={() => setIsEditPosModalVisible(false)}>
                 <FontAwesome name="times" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={{ padding: 20 }}>
-              <Text style={styles.inputLabel}>Nom du Dépôt *</Text>
+              <Text style={styles.inputLabel}>{t('franchise.depotName')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posName} 
                 onChangeText={setPosName} 
-                placeholder="Ex: Dépôt Nord - Ariana..." 
+                placeholder={t('franchise.placeholderDepotName')}
                 placeholderTextColor="#64748b" 
               />
 
-              <Text style={styles.inputLabel}>Ville</Text>
+              <Text style={styles.inputLabel}>{t('franchise.city')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posCity} 
                 onChangeText={setPosCity} 
-                placeholder="Ex: Ariana..." 
+                placeholder={t('franchise.placeholderCity')}
                 placeholderTextColor="#64748b" 
               />
 
-              <Text style={styles.inputLabel}>Adresse Complète</Text>
+              <Text style={styles.inputLabel}>{t('franchise.fullAddress')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posAddress} 
                 onChangeText={setPosAddress} 
-                placeholder="Ex: Rte de la Soukra..." 
+                placeholder={t('franchise.placeholderAddress')}
                 placeholderTextColor="#64748b" 
               />
 
-              <Text style={styles.inputLabel}>Téléphone</Text>
+              <Text style={styles.inputLabel}>{t('franchise.phone')}</Text>
               <TextInput 
                 style={styles.modalInput} 
                 value={posPhone} 
                 onChangeText={setPosPhone} 
                 keyboardType="phone-pad"
-                placeholder="Ex: 71888999..." 
+                placeholder={t('franchise.placeholderPhone')}
                 placeholderTextColor="#64748b" 
               />
 
               <TouchableOpacity style={[styles.submitBtn, { backgroundColor: '#3b82f6' }]} onPress={handleUpdatePosDetails}>
-                <Text style={styles.submitBtnText}>Enregistrer les Modifications</Text>
+                <Text style={styles.submitBtnText}>{t('franchise.saveChanges')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -451,7 +472,7 @@ export default function FranchiseScreen() {
           <View style={[styles.modalSheet, { height: '90%' }]}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>Ajuster le Stock</Text>
+                <Text style={styles.modalTitle}>{t('franchise.adjustStockTitle')}</Text>
                 <Text style={styles.modalSubTitle}>{selectedPos?.name}</Text>
               </View>
               <TouchableOpacity onPress={() => setIsStockModalVisible(false)}>
@@ -460,10 +481,10 @@ export default function FranchiseScreen() {
             </View>
 
             <ScrollView style={{ padding: 20 }} contentContainerStyle={{ paddingBottom: 60 }}>
-              <Text style={styles.mgmtSectionTitle}>PRODUITS DU CATALOGUE</Text>
+              <Text style={styles.mgmtSectionTitle}>{t('franchise.catalogProducts')}</Text>
               
               {catalogProducts.length === 0 && (
-                <Text style={styles.noStockText}>Aucun produit dans votre catalogue. Créez des produits dans l'onglet Catalogue d'abord.</Text>
+                <Text style={styles.noStockText}>{t('franchise.noProducts')}</Text>
               )}
 
               {catalogProducts.map((prod) => {
@@ -472,7 +493,7 @@ export default function FranchiseScreen() {
                   <View key={prod.id} style={styles.inventoryRow}>
                     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                       <Text style={styles.invName}>{prod.name}</Text>
-                      <Text style={styles.invPrice}>{Number(prod.price).toFixed(3)} DT — Unité: {prod.unit || 'unité'}</Text>
+                      <Text style={styles.invPrice}>{Number(prod.price).toFixed(3)} {t('franchise.currency')} — {t('franchise.unit')}: {prod.unit || t('franchise.unitFallback')}</Text>
                     </View>
 
                     <View style={styles.qtyController}>
@@ -508,7 +529,7 @@ export default function FranchiseScreen() {
               })}
 
               <TouchableOpacity style={styles.saveStockBtn} onPress={handleSaveStockInventory}>
-                <Text style={styles.saveStockBtnText}>Sauvegarder l'Inventaire</Text>
+                <Text style={styles.saveStockBtnText}>{t('franchise.saveInventory')}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

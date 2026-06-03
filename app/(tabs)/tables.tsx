@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Platform, Modal, Alert, Text, View } from 'react-native';
 import { Colors } from '@/constants/Colors';
+import { useT } from '@/constants/translations';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthService } from '@/services/auth';
@@ -21,6 +22,7 @@ export default function TablesScreen() {
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   
   const router = useRouter();
+  const t = useT();
 
   const loadData = useCallback(async () => {
     try {
@@ -161,8 +163,8 @@ export default function TablesScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={{ backgroundColor: 'transparent' }}>
-          <Text style={styles.headerTitle}>Plan de Salle</Text>
-          <Text style={styles.headerSubtitle}>Veuillez sélectionner une table</Text>
+          <Text style={styles.headerTitle}>{t('tables.title')}</Text>
+          <Text style={styles.headerSubtitle}>{t('tables.subtitle')}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: 'transparent' }}>
           <TouchableOpacity style={styles.historyBtn} onPress={handleOpenHistory}>
@@ -195,7 +197,7 @@ export default function TablesScreen() {
               {isActive ? (
                 <Text style={styles.tableTotal}>{cart.total.toFixed(3)} DT</Text>
               ) : (
-                <Text style={styles.tableFree}>Libre</Text>
+                <Text style={styles.tableFree}>{t('tables.free')}</Text>
               )}
             </TouchableOpacity>
           );

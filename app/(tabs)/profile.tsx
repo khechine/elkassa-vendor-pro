@@ -8,11 +8,15 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useTheme, ThemeColors } from '@/components/useTheme';
 import { useThemeContext } from '@/components/ThemeContext';
+import { useLocaleContext } from '@/components/LocaleContext';
+import { useT } from '@/constants/translations';
 
 export default function ProfileScreen() {
   const T = useTheme();
   const styles = createStyles(T);
   const { toggleColorScheme, isDark } = useThemeContext();
+  const { locale, toggleLang } = useLocaleContext();
+  const t = useT();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -102,46 +106,46 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={[styles.scrollBody, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Profil Vendeur</Text>
+        <Text style={styles.sectionTitle}>{t('profile.title')}</Text>
         
         {/* Basic Info */}
         <View style={[styles.card, styles.glassEffect]}>
-          <Text style={styles.cardHeader}>Informations Générales</Text>
+          <Text style={styles.cardHeader}>{t('profile.generalInfo')}</Text>
           
-          <Text style={styles.label}>Nom de l'entreprise</Text>
+          <Text style={styles.label}>{t('profile.companyName')}</Text>
           <TextInput 
             style={styles.input} 
             value={form.companyName} 
             onChangeText={(t) => setForm({...form, companyName: t})}
-            placeholder="Ex: Café de Paris"
+            placeholder={t('profile.companyPlaceholder')}
             placeholderTextColor={T.textMuted}
           />
 
-          <Text style={styles.label}>Description Marketplace</Text>
+          <Text style={styles.label}>{t('profile.descMarketplace')}</Text>
           <TextInput 
             style={[styles.input, { height: 100, textAlignVertical: 'top' }]} 
             value={form.description} 
             onChangeText={(t) => setForm({...form, description: t})}
             multiline
-            placeholder="Décrivez votre activité..."
+            placeholder={t('profile.descPlaceholder')}
             placeholderTextColor={T.textMuted}
           />
         </View>
 
         {/* Contact & Map */}
         <View style={[styles.card, styles.glassEffect]}>
-          <Text style={styles.cardHeader}>Coordonnées & Localisation</Text>
+          <Text style={styles.cardHeader}>{t('profile.coords')}</Text>
           
-          <Text style={styles.label}>Adresse Physique</Text>
+          <Text style={styles.label}>{t('profile.address')}</Text>
           <TextInput 
             style={styles.input} 
             value={form.address} 
             onChangeText={(t) => setForm({...form, address: t})}
-            placeholder="Ex: Rue 123, Tunis"
+            placeholder={t('profile.addressPlaceholder')}
             placeholderTextColor={T.textMuted}
           />
 
-          <Text style={styles.label}>Téléphone de contact</Text>
+          <Text style={styles.label}>{t('profile.phone')}</Text>
           <TextInput 
             style={styles.input} 
             value={form.phone} 
@@ -152,7 +156,7 @@ export default function ProfileScreen() {
 
           <View style={styles.row}>
             <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-              <Text style={styles.label}>Latitude</Text>
+              <Text style={styles.label}>{t('profile.lat')}</Text>
               <TextInput 
                 style={styles.input} 
                 value={form.lat} 
@@ -162,7 +166,7 @@ export default function ProfileScreen() {
             </View>
             <View style={{ width: 20, backgroundColor: 'transparent' }} />
             <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-              <Text style={styles.label}>Longitude</Text>
+              <Text style={styles.label}>{t('profile.lng')}</Text>
               <TextInput 
                 style={styles.input} 
                 value={form.lng} 
@@ -173,17 +177,17 @@ export default function ProfileScreen() {
           </View>
           <TouchableOpacity style={styles.mapHint}>
             <FontAwesome name="map-marker" size={14} color={Colors.warning} />
-            <Text style={styles.mapHintText}> Utiliser ma position actuelle</Text>
+            <Text style={styles.mapHintText}>{t('profile.useLocation')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Theme Toggle */}
         <View style={[styles.card, styles.glassEffect]}>
-          <Text style={styles.cardHeader}>Affichage</Text>
+          <Text style={styles.cardHeader}>{t('profile.display')}</Text>
           <View style={[styles.row, { alignItems: 'center', justifyContent: 'space-between' }]}>
             <View style={{ backgroundColor: 'transparent', flex: 1 }}>
-              <Text style={[styles.label, { marginBottom: 0 }]}>Mode sombre</Text>
-              <Text style={{ color: T.textMuted, fontSize: 12, marginTop: 2 }}>Activer/désactiver le thème sombre</Text>
+              <Text style={[styles.label, { marginBottom: 0 }]}>{t('profile.darkMode')}</Text>
+              <Text style={{ color: T.textMuted, fontSize: 12, marginTop: 2 }}>{t('profile.darkModeDesc')}</Text>
             </View>
             <Switch
               value={isDark}
@@ -192,10 +196,22 @@ export default function ProfileScreen() {
               thumbColor={isDark ? '#fff' : '#f4f3f4'}
             />
           </View>
+          <View style={[styles.row, { alignItems: 'center', justifyContent: 'space-between', marginTop: 20 }]}>
+            <View style={{ backgroundColor: 'transparent', flex: 1 }}>
+              <Text style={[styles.label, { marginBottom: 0 }]}>{t('profile.language')}</Text>
+              <Text style={{ color: T.textMuted, fontSize: 12, marginTop: 2 }}>{t('profile.languageDesc')}</Text>
+            </View>
+            <Switch
+              value={locale === 'ar'}
+              onValueChange={toggleLang}
+              trackColor={{ false: '#767577', true: Colors.warning }}
+              thumbColor={locale === 'ar' ? '#fff' : '#f4f3f4'}
+            />
+          </View>
         </View>
 
         {/* Sectors */}
-        <Text style={styles.sectionSubtitle}>Secteurs Marketplace</Text>
+        <Text style={styles.sectionSubtitle}>{t('profile.sectors')}</Text>
         <View style={styles.sectorsGrid}>
           {allSectors.map((sector) => (
             <TouchableOpacity 
@@ -221,7 +237,7 @@ export default function ProfileScreen() {
         >
           {saving 
             ? <ActivityIndicator color={T.white} />
-            : <Text style={styles.saveBtnText}>Enregistrer les modifications</Text>
+            : <Text style={styles.saveBtnText}>{t('profile.save')}</Text>
           }
         </TouchableOpacity>
 

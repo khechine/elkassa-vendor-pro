@@ -5,6 +5,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Colors } from '@/constants/Colors';
+import { useT } from '../constants/translations';
 
 const { width, height } = Dimensions.get('window');
 const innerDimension = width * 0.7;
@@ -14,6 +15,7 @@ export default function ScannerScreen() {
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);
   const router = useRouter();
+  const t = useT();
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -62,7 +64,7 @@ export default function ScannerScreen() {
             <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
               <FontAwesome name="close" size={24} color="#ffffff" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Scanner un article</Text>
+            <Text style={styles.headerTitle}>{t('scanner.title')}</Text>
             <TouchableOpacity onPress={() => setTorch(!torch)} style={styles.iconBtn}>
               <FontAwesome name="flash" size={24} color={torch ? Colors.primary : "#ffffff"} />
             </TouchableOpacity>

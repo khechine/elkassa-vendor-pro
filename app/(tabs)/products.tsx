@@ -9,13 +9,14 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useLocalSearchParams } from 'expo-router';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
+import { t, useT } from '@/constants/translations';
 
 const C = Colors;
 
 const STOCK_OPTIONS = [
-  { value: 'IN_STOCK', label: 'En Stock', color: '#22ac38' },
-  { value: 'LOW_STOCK', label: 'Stock Faible', color: '#ff9500' },
-  { value: 'OUT_OF_STOCK', label: 'Rupture', color: '#e64545' },
+  { value: 'IN_STOCK', label: t('catalog.inStock'), color: '#22ac38' },
+  { value: 'LOW_STOCK', label: t('catalog.lowStock'), color: '#ff9500' },
+  { value: 'OUT_OF_STOCK', label: t('catalog.outOfStock'), color: '#e64545' },
 ];
 
 export default function ProductsScreen() {
@@ -71,6 +72,8 @@ export default function ProductsScreen() {
     });
   }, [fetchData]);
 
+  const t = useT();
+
   const onRefresh = useCallback(() => {
     if (vendorId) {
       setRefreshing(true);
@@ -108,7 +111,7 @@ export default function ProductsScreen() {
   };
 
   const handleSaveItem = async () => {
-    if (!formName) return showAlert({ title: "Erreur", message: "Le nom est requis.", type: 'error' });
+    if (!formName) return showAlert({ title: t('general.error'), message: t('catalog.nameRequired'), type: 'error' });
     try {
       const payload: Record<string, any> = {
         name: formName,
@@ -147,30 +150,30 @@ export default function ProductsScreen() {
       
       setIsItemModalVisible(false);
       onRefresh();
-      showAlert({ title: "Succès", message: editingItem ? "Produit mis à jour." : "Produit créé.", type: 'success' });
+      showAlert({ title: t('general.success'), message: editingItem ? t('catalog.productUpdated') : t('catalog.productCreated'), type: 'success' });
     } catch (error) {
-      showAlert({ title: "Erreur", message: "Sauvegarde impossible.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.saveError'), type: 'error' });
     }
   };
 
   const handleDeleteItem = (item: any) => {
     showAlert({
-      title: "Supprimer",
-      message: `Supprimer "${item.productStandard?.name || item.name}" ?`,
+      title: t('catalog.delete'),
+      message: `${t('catalog.delete')} "${item.productStandard?.name || item.name}" ?`,
       type: 'warning',
       buttons: [
-        { text: "Annuler", style: 'cancel' },
+        { text: t('catalog.cancel'), style: 'cancel' },
         {
-          text: "Supprimer",
+          text: t('catalog.delete'),
           style: 'destructive',
           onPress: async () => {
             setDeletingId(item.id);
             try {
               await ApiService.delete(`/management/marketplace/products/${item.id}`);
               onRefresh();
-              showAlert({ title: "Supprimé", message: "Produit supprimé.", type: 'success' });
+              showAlert({ title: t('general.success'), message: t('catalog.productDeleted'), type: 'success' });
             } catch {
-              showAlert({ title: "Erreur", message: "Échec de la suppression.", type: 'error' });
+              showAlert({ title: t('general.error'), message: t('catalog.deleteError'), type: 'error' });
             } finally {
               setDeletingId(null);
             }
@@ -190,7 +193,7 @@ export default function ProductsScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showAlert({ title: "Accès refusé", message: "Nous avons besoin de l'accès à vos photos.", type: 'warning' });
+      showAlert({ title: t('general.accessDenied'), message: t('products.photosAccessRequired'), type: 'warning' });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -208,7 +211,7 @@ export default function ProductsScreen() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      showAlert({ title: "Erreur", message: "Accès caméra refusé.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.cameraDenied'), type: 'error' });
       return;
     }
 
@@ -251,7 +254,7 @@ export default function ProductsScreen() {
       }
     } catch (error) {
       console.error("Upload error details:", error);
-      showAlert({ title: "Erreur", message: "Échec de l'upload. Vérifiez votre connexion.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('products.uploadError'), type: 'error' });
     } finally {
       setUploading(false);
     }
@@ -291,30 +294,30 @@ export default function ProductsScreen() {
     <View style={[styles.container, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]}>
       <View style={styles.header}>
         <View style={{ backgroundColor: 'transparent' }}>
-          <Text style={styles.sectionTitle}>Mon Catalogue</Text>
-          <Text style={styles.headerSub}>{filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.sectionTitle}>{t('products.myCatalog')}</Text>
+          <Text style={styles.headerSub}>{filteredProducts.length} {filteredProducts.length !== 1 ? t('catalog.products').toLowerCase() : t('catalog.product_singular')}</Text>
         </View>
         <TouchableOpacity style={styles.addBtn} onPress={() => handleOpenItemModal()}>
           <FontAwesome name="plus" size={14} color="#fff" />
-          <Text style={styles.addBtnText}> Ajouter</Text>
+          <Text style={styles.addBtnText}> {t('catalog.addProduct')}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.tabContainer}>
         <TouchableOpacity style={[styles.tab, activeTab === 'CATALOG' && styles.activeTab]} onPress={() => setActiveTab('CATALOG')}>
           <FontAwesome name="th-large" size={14} color={activeTab === 'CATALOG' ? C.warning : T.textDim} style={{ marginRight: 6 }} />
-          <Text style={[styles.tabText, activeTab === 'CATALOG' && styles.activeTabText]}>Catalogue</Text>
+          <Text style={[styles.tabText, activeTab === 'CATALOG' && styles.activeTabText]}>{t('products.catalog')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, activeTab === 'PROMOTIONS' && styles.activeTab]} onPress={() => setActiveTab('PROMOTIONS')}>
           <FontAwesome name="bolt" size={14} color={activeTab === 'PROMOTIONS' ? C.warning : T.textDim} style={{ marginRight: 6 }} />
-          <Text style={[styles.tabText, activeTab === 'PROMOTIONS' && styles.activeTabText]}>Promotions</Text>
+          <Text style={[styles.tabText, activeTab === 'PROMOTIONS' && styles.activeTabText]}>{t('products.promotions')}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchBar}>
         <FontAwesome name="search" size={16} color={T.textDim} style={{ marginRight: 10 }} />
         <TextInput 
-          placeholder="Chercher un produit..." 
+          placeholder={t('catalog.search')} 
           placeholderTextColor={T.textDim}
           style={styles.searchInput}
           value={search}
@@ -357,20 +360,20 @@ export default function ProductsScreen() {
                 )}
               </View>
               
-              <Text style={styles.itemMeta}>Min: {p.minOrderQty} • {p.images?.length || 0} photo{p.images?.length !== 1 ? 's' : ''}</Text>
+              <Text style={styles.itemMeta}>{t('products.min')}: {p.minOrderQty} • {p.images?.length || 0} {p.images?.length !== 1 ? t('products.photos_plural') : t('products.photos_singular')}</Text>
               
               <View style={styles.itemTags}>
                 {renderStockBadge(p.stockStatus)}
                 {p.isFeatured && (
                   <View style={[styles.tag, styles.tagFeatured]}>
                     <FontAwesome name="star" size={9} color={C.warning} style={{ marginRight: 3 }} />
-                    <Text style={[styles.tagText, { color: C.warning }]}>En avant</Text>
+                    <Text style={[styles.tagText, { color: C.warning }]}>{t('catalog.featured')}</Text>
                   </View>
                 )}
                 {p.isFlashSale && (
                   <View style={[styles.tag, styles.tagFlash]}>
                     <FontAwesome name="bolt" size={9} color={C.primary} style={{ marginRight: 3 }} />
-                    <Text style={[styles.tagText, { color: C.primary }]}>Flash</Text>
+                    <Text style={[styles.tagText, { color: C.primary }]}>{t('catalog.flash')}</Text>
                   </View>
                 )}
               </View>
@@ -399,10 +402,10 @@ export default function ProductsScreen() {
             </View>
             <Text style={styles.emptyText}>
               {activeTab === 'PROMOTIONS'
-                ? 'Aucune promotion pour le moment'
+                ? t('products.noPromotions')
                 : search
-                  ? 'Aucun produit trouvé'
-                  : 'Commencez par ajouter un produit'}
+                  ? t('catalog.noProducts')
+                  : t('products.startAdd')}
             </Text>
           </View>
         )}
@@ -415,8 +418,8 @@ export default function ProductsScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>{editingItem ? 'Modifier' : 'Nouveau'} Produit</Text>
-                <Text style={styles.modalSub}>{editingItem ? 'Modifiez les détails du produit' : 'Remplissez les informations'}</Text>
+                <Text style={styles.modalTitle}>{editingItem ? t('catalog.edit') : t('catalog.newProduct')} {t('catalog.product_singular')}</Text>
+                <Text style={styles.modalSub}>{editingItem ? t('products.editDetails') : t('products.fillInfo')}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsItemModalVisible(false)}>
                 <FontAwesome name="times" size={18} color={T.textDim} />
@@ -429,43 +432,43 @@ export default function ProductsScreen() {
               showsVerticalScrollIndicator={false}
             >
               {/* Section: Informations de base */}
-              <Text style={styles.formSectionTitle}>Informations générales</Text>
+              <Text style={styles.formSectionTitle}>{t('products.generalInfo')}</Text>
 
-              <Text style={styles.inputLabel}>Nom du produit *</Text>
+              <Text style={styles.inputLabel}>{t('catalog.productName')} *</Text>
               <TextInput
                 style={styles.modalInput}
                 value={formName}
                 onChangeText={setFormName}
-                placeholder="Ex: Café Latte Bio"
+                placeholder={t('products.productNamePlaceholder')}
                 placeholderTextColor={T.textDim}
               />
 
-              <Text style={styles.inputLabel}>Description</Text>
+              <Text style={styles.inputLabel}>{t('catalog.description')}</Text>
               <TextInput
                 style={[styles.modalInput, styles.modalInputMultiline]}
                 value={formDescription}
                 onChangeText={setFormDescription}
-                placeholder="Description du produit..."
+                placeholder={t('products.productDescPlaceholder')}
                 placeholderTextColor={T.textDim}
                 multiline
                 numberOfLines={3}
               />
 
-              <Text style={styles.inputLabel}>Catégorie</Text>
+              <Text style={styles.inputLabel}>{t('products.category')}</Text>
               <TextInput
                 style={styles.modalInput}
                 value={formCategory}
                 onChangeText={setFormCategory}
-                placeholder="Ex: Boissons, Pâtisseries..."
+                placeholder={t('products.categoryPlaceholder')}
                 placeholderTextColor={T.textDim}
               />
 
               {/* Section: Prix et Quantité */}
-              <Text style={styles.formSectionTitle}>Prix et commande</Text>
+              <Text style={styles.formSectionTitle}>{t('products.priceAndOrder')}</Text>
 
               <View style={styles.formRow}>
                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                  <Text style={styles.inputLabel}>Prix de vente (DT)</Text>
+                  <Text style={styles.inputLabel}>{t('catalog.sellingPrice')}</Text>
                   <TextInput
                     style={styles.modalInput}
                     value={formPrice}
@@ -476,13 +479,13 @@ export default function ProductsScreen() {
                   />
                 </View>
                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                  <Text style={styles.inputLabel}>Prix promo (DT)</Text>
+                  <Text style={styles.inputLabel}>{t('products.promoPrice')}</Text>
                   <TextInput
                     style={styles.modalInput}
                     value={formDiscountPrice}
                     onChangeText={setFormDiscountPrice}
                     keyboardType="numeric"
-                    placeholder="Optionnel"
+                    placeholder={t('products.optional')}
                     placeholderTextColor={T.textDim}
                   />
                 </View>
@@ -490,7 +493,7 @@ export default function ProductsScreen() {
 
               <View style={styles.formRow}>
                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                  <Text style={styles.inputLabel}>Quantité min.</Text>
+                  <Text style={styles.inputLabel}>{t('catalog.minQty')}</Text>
                   <TextInput
                     style={styles.modalInput}
                     value={formMinQty}
@@ -503,7 +506,7 @@ export default function ProductsScreen() {
               </View>
 
               {/* Section: Stock */}
-              <Text style={styles.formSectionTitle}>Gestion du stock</Text>
+              <Text style={styles.formSectionTitle}>{t('products.stockManagement')}</Text>
 
               <View style={styles.stockGrid}>
                 {STOCK_OPTIONT.map(s => (
@@ -521,16 +524,16 @@ export default function ProductsScreen() {
               </View>
 
               {/* Section: Images */}
-              <Text style={styles.formSectionTitle}>Photos</Text>
+              <Text style={styles.formSectionTitle}>{t('catalog.photos')}</Text>
 
               <View style={styles.imageActions}>
                 <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: C.glass.green }]} onPress={pickImage}>
                   <FontAwesome name="photo" size={18} color={C.success} />
-                  <Text style={[styles.imageActionText, { color: C.success }]}>Galerie</Text>
+                  <Text style={[styles.imageActionText, { color: C.success }]}>{t('catalog.gallery')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: C.glass.blue }]} onPress={takePhoto}>
                   <FontAwesome name="camera" size={18} color={C.info} />
-                  <Text style={[styles.imageActionText, { color: C.info }]}>Caméra</Text>
+                  <Text style={[styles.imageActionText, { color: C.info }]}>{t('catalog.camera')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -539,7 +542,7 @@ export default function ProductsScreen() {
                   style={[styles.modalInput, { flex: 1, marginBottom: 0 }]}
                   value={newImageUrl}
                   onChangeText={setNewImageUrl}
-                  placeholder="Ou collez une URL d'image..."
+                  placeholder={t('products.imageUrlPlaceholder')}
                   placeholderTextColor={T.textDim}
                 />
                 <TouchableOpacity style={styles.imageUrlAddBtn} onPress={addImage}>
@@ -550,7 +553,7 @@ export default function ProductsScreen() {
               {uploading && (
                 <View style={styles.uploadingRow}>
                   <ActivityIndicator size="small" color={C.warning} />
-                  <Text style={{ color: C.warning, fontSize: 13 }}>Chargement de l'image...</Text>
+                  <Text style={{ color: C.warning, fontSize: 13 }}>{t('products.uploading')}</Text>
                 </View>
               )}
 
@@ -568,7 +571,7 @@ export default function ProductsScreen() {
               )}
 
               {/* Section: Upselling / Mise en avant */}
-              <Text style={styles.formSectionTitle}>Mise en avant & promotions</Text>
+              <Text style={styles.formSectionTitle}>{t('products.featuredAndPromos')}</Text>
 
               <View style={styles.upsellGrid}>
                 <TouchableOpacity
@@ -576,8 +579,8 @@ export default function ProductsScreen() {
                   onPress={() => setFormFeatured(!formFeatured)}
                 >
                   <FontAwesome name="star" size={24} color={formFeatured ? C.warning : T.textMuted} />
-                  <Text style={[styles.upsellLabel, formFeatured && { color: C.warning }]}>En avant</Text>
-                  <Text style={styles.upsellDesc}>Met ce produit en vedette</Text>
+                  <Text style={[styles.upsellLabel, formFeatured && { color: C.warning }]}>{t('catalog.featured')}</Text>
+                  <Text style={styles.upsellDesc}>{t('products.featuredDesc')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -585,15 +588,15 @@ export default function ProductsScreen() {
                   onPress={() => setFormFlash(!formFlash)}
                 >
                   <FontAwesome name="bolt" size={24} color={formFlash ? C.primary : T.textMuted} />
-                  <Text style={[styles.upsellLabel, formFlash && { color: C.primary }]}>Flash Sale</Text>
-                  <Text style={styles.upsellDesc}>Active le mode flash</Text>
+                  <Text style={[styles.upsellLabel, formFlash && { color: C.primary }]}>{t('catalog.flash')}</Text>
+                  <Text style={styles.upsellDesc}>{t('products.flashDesc')}</Text>
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity style={styles.saveBtn} onPress={handleSaveItem}>
                 <FontAwesome name="check" size={18} color="#fff" style={{ marginRight: 10 }} />
                 <Text style={styles.saveBtnText}>
-                  {editingItem ? 'Mettre à jour' : 'Publier le produit'}
+                  {editingItem ? t('catalog.update') : t('products.publish')}
                 </Text>
               </TouchableOpacity>
             </ScrollView>

@@ -6,6 +6,7 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
+import { useT } from '@/constants/translations';
 
 type SubTab = 'commandes' | 'devis' | 'messages';
 
@@ -48,6 +49,7 @@ export default function VentesScreen() {
   const [newMessage, setNewMessage] = useState('');
   const [sendingMsg, setSendingMsg] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const t = useT();
 
   const fetchClientInfo = async (orderId: string) => {
     setLoadingClient(true);
@@ -117,22 +119,22 @@ const fetchConversations = useCallback(async () => {
         setSelectedOrder({ ...selectedOrder, status });
         fetchClientInfo(orderId);
       }
-      showAlert({ title: 'Succès', message: 'Statut mis à jour.', type: 'success' });
-    } catch { showAlert({ title: 'Erreur', message: 'Mise à jour impossible.', type: 'error' }); }
+      showAlert({ title: t('general.success'), message: t('ventes.statusUpdated'), type: 'success' });
+    } catch { showAlert({ title: t('general.error'), message: t('ventes.updateFailed'), type: 'error' }); }
   };
 
   const confirmOrderAction = (orderId: string, newStatus: string, message: string) => {
-    showAlert({ title: 'Confirmation', message, type: 'warning', buttons: [
-      { text: 'Annuler', style: 'cancel' },
-      { text: 'Confirmer', style: 'default', onPress: () => handleOrderStatus(orderId, newStatus) }
+    showAlert({ title: t('ventes.confirmation'), message, type: 'warning', buttons: [
+      { text: t('actions.cancel'), style: 'cancel' },
+      { text: t('actions.confirm'), style: 'default', onPress: () => handleOrderStatus(orderId, newStatus) }
     ]});
   };
 
   // RFQ handlers
   const openRfqModal = (rfq: any) => {
     if (rfq.hasSubmittedQuote) {
-      const statusMsg = rfq.myQuote?.status === 'ACCEPTED' ? 'Votre proposition a été acceptée.' : rfq.myQuote?.status === 'REJECTED' ? 'Votre proposition a été refusée.' : 'Proposition déjà envoyée, en attente de réponse.';
-      return showAlert({ title: 'Proposition', message: `${statusMsg} Prix: ${Number(rfq.myQuote?.price || 0).toFixed(3)} DT`, type: 'info' });
+      const statusMsg = rfq.myQuote?.status === 'ACCEPTED' ? t('ventes.proposalAccepted') : rfq.myQuote?.status === 'REJECTED' ? t('ventes.proposalRejected') : t('ventes.proposalPending');
+      return showAlert({ title: t('ventes.proposal'), message: `${statusMsg} ${t('ventes.proposal')}: ${Number(rfq.myQuote?.price || 0).toFixed(3)} DT`, type: 'info' });
     }
     setSelectedRfq(rfq);
     setQuotePrice(String(rfq.budget ? Number(rfq.budget) * 0.95 : ''));
@@ -141,18 +143,18 @@ const fetchConversations = useCallback(async () => {
   };
 
   const submitQuote = async () => {
-    if (!quotePrice || Number(quotePrice) <= 0) return showAlert({ title: 'Erreur', message: 'Prix invalide.', type: 'error' });
+    if (!quotePrice || Number(quotePrice) <= 0) return showAlert({ title: t('general.error'), message: t('ventes.invalidPrice'), type: 'error' });
     setSubmittingQuote(true);
     try {
       const res = await ApiService.post('/management/vendor/rfq', { rfqId: selectedRfq.id, price: Number(quotePrice), notes: quoteNotes || undefined });
       if (res?.success) {
         setRfqModalVisible(false);
-        showAlert({ title: 'Envoyé', message: 'Devis soumis avec succès.', type: 'success' });
+        showAlert({ title: t('ventes.sent'), message: t('ventes.quoteSubmitted'), type: 'success' });
         fetchRfqs();
-      } else showAlert({ title: 'Erreur', message: res?.error || 'Échec.', type: 'error' });
+      } else showAlert({ title: t('general.error'), message: res?.error || t('ventes.failed'), type: 'error' });
     } catch (err: any) {
-      const msg = err?.message || err?.error || 'Échec de l\'envoi.';
-      showAlert({ title: 'Erreur', message: msg, type: 'error' });
+      const msg = err?.message || err?.error || t('ventes.failed');
+      showAlert({ title: t('general.error'), message: msg, type: 'error' });
     } finally { setSubmittingQuote(false); }
   };
 
@@ -181,7 +183,7 @@ const fetchConversations = useCallback(async () => {
         fetchConversations();
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 200);
       }
-    } catch { showAlert({ title: 'Erreur', message: 'Message non envoyé.', type: 'error' }); }
+    } catch { showAlert({ title: t('general.error'), message: t('ventes.messageNotSent'), type: 'error' }); }
     finally { setSendingMsg(false); }
   };
 
@@ -196,11 +198,11 @@ const fetchConversations = useCallback(async () => {
   const isOwnMessage = (msg: any) => msg.senderId === userId;
 
   const ORDER_TABS = [
-    { key: 'PENDING', label: 'Nouvelles', icon: 'clock-o', color: T.warning },
-    { key: 'CONFIRMED', label: 'Acceptées', icon: 'check-circle', color: '#1470cc' },
-    { key: 'SHIPPED', label: 'Expédiées', icon: 'truck', color: T.info },
-    { key: 'DELIVERED', label: 'Livrées', icon: 'history', color: T.success },
-    { key: 'CANCELLED', label: 'Annulées', icon: 'times-circle', color: T.primary },
+    { key: 'PENDING', label: t('ventes.newOrders'), icon: 'clock-o', color: T.warning },
+    { key: 'CONFIRMED', label: t('ventes.accepted'), icon: 'check-circle', color: '#1470cc' },
+    { key: 'SHIPPED', label: t('ventes.shipped'), icon: 'truck', color: T.info },
+    { key: 'DELIVERED', label: t('orders.delivered'), icon: 'history', color: T.success },
+    { key: 'CANCELLED', label: t('orders.cancelled'), icon: 'times-circle', color: T.primary },
   ] as const;
 
   const orderStatusColor = (status: string) => {
@@ -219,14 +221,14 @@ const fetchConversations = useCallback(async () => {
   const displayRfqs = activeRfqTab === 'disponibles' ? openRfqs : activeRfqTab === 'acceptees' ? acceptedQuotes : myQuotes;
 
   const STATUS_LABELS: Record<string, string> = {
-    PENDING: 'En attente', CONFIRMED: 'Acceptée', SHIPPED: 'Expédiée',
-    DELIVERED: 'Livrée', CANCELLED: 'Annulée', STOCKED: 'Finalisée',
+    PENDING: t('orders.pending'), CONFIRMED: t('orders.confirmed'), SHIPPED: t('orders.shipped'),
+    DELIVERED: t('orders.delivered'), CANCELLED: t('orders.cancelled'), STOCKED: t('ventes.finalized'),
   };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Ventes</Text>
+        <Text style={styles.title}>{t('tabs.ventes')}</Text>
       </View>
 
       <View style={styles.subTabRow}>
@@ -241,7 +243,7 @@ const fetchConversations = useCallback(async () => {
               size={12} color={activeSubTab === tab ? T.primary : T.textDim} style={{ marginRight: 4 }}
             />
             <Text style={[styles.subTabText, activeSubTab === tab && styles.subTabTextActive]}>
-              {tab === 'commandes' ? 'Commandes' : tab === 'devis' ? 'Devis' : 'Messages'}
+              {tab === 'commandes' ? t('ventes.orders') : tab === 'devis' ? t('ventes.quotes') : t('ventes.messages')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -282,22 +284,22 @@ const fetchConversations = useCallback(async () => {
                 <TouchableOpacity key={order.id} style={styles.orderCard} onPress={() => { setSelectedOrder(order); fetchClientInfo(order.id); }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent', marginBottom: 12 }}>
                     <View style={{ backgroundColor: 'transparent', flex: 1 }}>
-                      <Text style={styles.orderStore}>{order.store?.name || 'Café'}</Text>
+                      <Text style={styles.orderStore}>{order.store?.name || t('ventes.product')}</Text>
                       <Text style={styles.orderRef}>#{order.id?.slice(-6).toUpperCase()} — {formatDate(order.createdAt)}</Text>
                     </View>
                     <Text style={[styles.orderTotal, { color: orderStatusColor(order.status) }]}>{Number(order.total || 0).toFixed(3)} DT</Text>
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'transparent', paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)' }}>
-                    <Text style={{ color: T.textDim, fontSize: 12 }}>{order.items?.length || 0} article(s)</Text>
+                    <Text style={{ color: T.textDim, fontSize: 12 }}>{order.items?.length || 0} {t('ventes.items')}</Text>
                     <FontAwesome name="chevron-right" size={12} color={T.textMuted} />
                   </View>
                   {order.status === 'PENDING' && (
                     <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, backgroundColor: 'transparent' }}>
-                      <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(230,69,69,0.1)', borderColor: T.primary }]} onPress={() => confirmOrderAction(order.id, 'CANCELLED', 'Refuser ?')}>
-                        <Text style={[styles.actionBtnText, { color: T.primary }]}>Refuser</Text>
+                      <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(230,69,69,0.1)', borderColor: T.primary }]} onPress={() => confirmOrderAction(order.id, 'CANCELLED', `${t('orders.refuse')} ?`)}>
+                        <Text style={[styles.actionBtnText, { color: T.primary }]}>{t('orders.refuse')}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(20,112,204,0.1)', borderColor: '#1470cc', flex: 2 }]} onPress={() => confirmOrderAction(order.id, 'CONFIRMED', 'Accepter ?')}>
-                        <Text style={[styles.actionBtnText, { color: '#1470cc' }]}>Accepter</Text>
+                      <TouchableOpacity style={[styles.actionBtn, { backgroundColor: 'rgba(20,112,204,0.1)', borderColor: '#1470cc', flex: 2 }]} onPress={() => confirmOrderAction(order.id, 'CONFIRMED', `${t('orders.accept')} ?`)}>
+                        <Text style={[styles.actionBtnText, { color: '#1470cc' }]}>{t('orders.accept')}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -312,13 +314,13 @@ const fetchConversations = useCallback(async () => {
           <>
             <View style={{ flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 3, marginBottom: 16 }}>
               <TouchableOpacity style={[styles.rfqTab, activeRfqTab === 'disponibles' && styles.rfqTabActive]} onPress={() => setActiveRfqTab('disponibles')}>
-                <Text style={[styles.rfqTabText, activeRfqTab === 'disponibles' && { color: T.primary }]}>Disponibles</Text>
+                <Text style={[styles.rfqTabText, activeRfqTab === 'disponibles' && { color: T.primary }]}>{t('ventes.available')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.rfqTab, activeRfqTab === 'propositions' && styles.rfqTabActive]} onPress={() => setActiveRfqTab('propositions')}>
-                <Text style={[styles.rfqTabText, activeRfqTab === 'propositions' && { color: T.primary }]}>Propositions ({myQuotes.length})</Text>
+                <Text style={[styles.rfqTabText, activeRfqTab === 'propositions' && { color: T.primary }]}>{t('ventes.proposals')} ({myQuotes.length})</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.rfqTab, activeRfqTab === 'acceptees' && styles.rfqTabActive]} onPress={() => setActiveRfqTab('acceptees')}>
-                <Text style={[styles.rfqTabText, activeRfqTab === 'acceptees' && { color: T.primary }]}>Acceptées ({acceptedQuotes.length})</Text>
+                <Text style={[styles.rfqTabText, activeRfqTab === 'acceptees' && { color: T.primary }]}>{t('ventes.accepted')} ({acceptedQuotes.length})</Text>
               </TouchableOpacity>
             </View>
 
@@ -329,28 +331,28 @@ const fetchConversations = useCallback(async () => {
                 const qs = rfq.myQuote?.status;
                 let badge: any = null;
                 if (rfq.hasSubmittedQuote) {
-                  if (qs === 'ACCEPTED') badge = { label: 'Acceptée ✓', color: T.success };
-                  else if (qs === 'REJECTED') badge = { label: 'Refusée ✗', color: T.primary };
-                  else badge = { label: 'En attente', color: T.warning };
+                  if (qs === 'ACCEPTED') badge = { label: `${t('ventes.acceptedQuotes')} ✓`, color: T.success };
+                  else if (qs === 'REJECTED') badge = { label: `${t('ventes.rejectedQuotes')} ✗`, color: T.primary };
+                  else badge = { label: t('orders.pending'), color: T.warning };
                 }
                 return (
                 <TouchableOpacity key={rfq.id} style={styles.rfqCard} onPress={() => openRfqModal(rfq)}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent', marginBottom: 8 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent' }}>
                       <FontAwesome name="building" size={12} color={T.textMuted} />
-                      <Text style={{ color: T.textDim, fontSize: 11 }}>{rfq.store?.name || 'Café'}</Text>
+                      <Text style={{ color: T.textDim, fontSize: 11 }}>{rfq.store?.name || t('ventes.product')}</Text>
                     </View>
                     {badge && <Text style={{ color: badge.color, fontSize: 10, fontWeight: '800' }}>{badge.label}</Text>}
                   </View>
                   <Text style={{ color: T.white, fontSize: 16, fontWeight: '800', marginBottom: 4 }}>{rfq.title}</Text>
                   {rfq.description && <Text style={{ color: T.textMuted, fontSize: 12, marginBottom: 8 }} numberOfLines={2}>{rfq.description}</Text>}
                   <View style={{ flexDirection: 'row', gap: 16, backgroundColor: 'transparent', marginBottom: 8 }}>
-                    {rfq.budget && <Text style={{ color: T.warning, fontSize: 13, fontWeight: '800' }}>Budget: {Number(rfq.budget).toFixed(3)} DT</Text>}
-                    {rfq.quantity && <Text style={{ color: T.textMuted, fontSize: 12 }}>Qté: {rfq.quantity}</Text>}
+                    {rfq.budget && <Text style={{ color: T.warning, fontSize: 13, fontWeight: '800' }}>{t('ventes.proposal')}: {Number(rfq.budget).toFixed(3)} DT</Text>}
+                    {rfq.quantity && <Text style={{ color: T.textMuted, fontSize: 12 }}>{t('ventes.items')}: {rfq.quantity}</Text>}
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent' }}>
-                    {rfq.myQuote && <Text style={{ color: T.success, fontSize: 12, fontWeight: '700' }}>Mon offre: {Number(rfq.myQuote.price).toFixed(3)} DT</Text>}
-                    <Text style={{ color: T.textMuted, fontSize: 10 }}>Limite: {formatDate(rfq.expiresAt)}</Text>
+                    {rfq.myQuote && <Text style={{ color: T.success, fontSize: 12, fontWeight: '700' }}>{t('ventes.sent')}: {Number(rfq.myQuote.price).toFixed(3)} DT</Text>}
+                    <Text style={{ color: T.textMuted, fontSize: 10 }}>{t('orders.date')}: {formatDate(rfq.expiresAt)}</Text>
                   </View>
                 </TouchableOpacity>
                 );
@@ -360,7 +362,7 @@ const fetchConversations = useCallback(async () => {
               <View style={{ alignItems: 'center', marginTop: 80, backgroundColor: 'transparent' }}>
                 <FontAwesome name="file-text" size={50} color="rgba(255,255,255,0.06)" />
                 <Text style={{ color: T.textMuted, fontSize: 15, marginTop: 16, textAlign: 'center' }}>
-                  {activeRfqTab === 'disponibles' ? "Aucune demande de devis pour le moment" : activeRfqTab === 'acceptees' ? "Aucune proposition acceptée" : "Vous n'avez pas encore soumis de proposition"}
+                  {activeRfqTab === 'disponibles' ? t('ventes.emptyRfqs') : activeRfqTab === 'acceptees' ? t('ventes.emptyAccepted') : t('ventes.emptyMyProposals')}
                 </Text>
               </View>
             )}
@@ -378,11 +380,11 @@ const fetchConversations = useCallback(async () => {
                   <FontAwesome name="user-circle" size={40} color={T.textMuted} />
                   <View style={{ flex: 1, marginLeft: 12, backgroundColor: 'transparent' }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent' }}>
-                      <Text style={{ color: T.white, fontWeight: '700', fontSize: 15 }}>{conv.otherUser?.name || 'Client'}</Text>
+                      <Text style={{ color: T.white, fontWeight: '700', fontSize: 15 }}>{conv.otherUser?.name || t('orders.client')}</Text>
                       <Text style={{ color: T.textMuted, fontSize: 11 }}>{formatTime(conv.lastMessage?.createdAt)}</Text>
                     </View>
                     <Text style={{ color: T.textMuted, fontSize: 13, marginTop: 2 }} numberOfLines={1}>
-                      {conv.lastMessage?.senderId === userId ? 'Vous: ' : ''}{conv.lastMessage?.content || ''}
+                      {conv.lastMessage?.senderId === userId ? t('ventes.you') : ''}{conv.lastMessage?.content || ''}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -391,7 +393,7 @@ const fetchConversations = useCallback(async () => {
             {!loadingMessages && conversations.length === 0 && (
               <View style={{ alignItems: 'center', marginTop: 80, backgroundColor: 'transparent' }}>
                 <FontAwesome name="envelope" size={40} color="rgba(255,255,255,0.06)" />
-                <Text style={{ color: T.textMuted, fontSize: 15, marginTop: 16 }}>Aucune conversation</Text>
+                <Text style={{ color: T.textMuted, fontSize: 15, marginTop: 16 }}>{t('messaging.noConversations')}</Text>
               </View>
             )}
           </>
@@ -406,14 +408,14 @@ const fetchConversations = useCallback(async () => {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>Commande #{selectedOrder?.id?.slice(-6).toUpperCase()}</Text>
+                <Text style={styles.modalTitle}>{t('orders.orderId')}{selectedOrder?.id?.slice(-6).toUpperCase()}</Text>
                 <Text style={{ color: T.textMuted, fontSize: 12 }}>{selectedOrder?.store?.name}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => { setSelectedOrder(null); setClientInfo(null); }}><FontAwesome name="times" size={18} color={T.textDim} /></TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <Text style={{ color: T.textMuted, fontWeight: '700', fontSize: 13 }}>Statut</Text>
+                <Text style={{ color: T.textMuted, fontWeight: '700', fontSize: 13 }}>{t('orders.status')}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: orderStatusColor(selectedOrder?.status) + '22' }]}>
                   <Text style={{ color: orderStatusColor(selectedOrder?.status), fontWeight: '900', fontSize: 12 }}>{STATUS_LABELS[selectedOrder?.status] || selectedOrder?.status}</Text>
                 </View>
@@ -423,39 +425,39 @@ const fetchConversations = useCallback(async () => {
               {loadingClient ? (
                 <View style={{ padding: 20, alignItems: 'center', backgroundColor: 'transparent' }}>
                   <ActivityIndicator size="small" color={T.primary} />
-                  <Text style={{ color: T.textDim, fontSize: 12, marginTop: 8 }}>Déchiffrement...</Text>
+                  <Text style={{ color: T.textDim, fontSize: 12, marginTop: 8 }}>{t('ventes.decrypting')}</Text>
                 </View>
               ) : clientInfo ? (
                 <View style={[styles.vaultCard, { borderColor: clientInfo.contactUnlocked ? 'rgba(34,172,56,0.25)' : 'rgba(255,149,0,0.25)' }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, backgroundColor: 'transparent' }}>
                     <FontAwesome name={clientInfo.contactUnlocked ? 'unlock' : 'lock'} size={14} color={clientInfo.contactUnlocked ? T.success : T.warning} />
                     <Text style={{ color: clientInfo.contactUnlocked ? T.success : T.warning, fontSize: 9, fontWeight: '900', letterSpacing: 1 }}>
-                      VAULT — {clientInfo.contactUnlocked ? 'DÉVERROUILLÉ' : 'ANONYMISÉ'}
+                      VAULT — {clientInfo.contactUnlocked ? t('ventes.vaultUnlocked') : t('ventes.vaultAnonymized')}
                     </Text>
                   </View>
                   <Text style={{ color: T.white, fontSize: 17, fontWeight: '900', marginBottom: 12 }}>{clientInfo.clientName}</Text>
-                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>Ville</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.city}</Text></View>
-                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>Adresse</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.address}</Text></View>
-                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>Tél.</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.phone}</Text></View>
-                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>Email</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.email}</Text></View>
+                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>{t('ventes.city')}</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.city}</Text></View>
+                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>{t('ventes.address')}</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.address}</Text></View>
+                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>{t('ventes.phone')}</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.phone}</Text></View>
+                  <View style={{ flexDirection: 'row', marginBottom: 4, backgroundColor: 'transparent' }}><Text style={{ color: T.textMuted, width: 90, fontSize: 12, fontWeight: '800' }}>{t('ventes.email')}</Text><Text style={{ color: T.textDim, fontSize: 12 }}>{clientInfo.email}</Text></View>
                   {clientInfo.contactUnlocked ? (
                     <View style={{ flexDirection: 'row', gap: 12, marginTop: 14, backgroundColor: 'transparent' }}>
-                      <TouchableOpacity style={[styles.vaultBtn, { backgroundColor: T.success }]} onPress={() => clientInfo.phone && Linking.openURL(`tel:${clientInfo.phone}`)}><FontAwesome name="phone" size={14} color="#fff" /><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}> Appeler</Text></TouchableOpacity>
-                      <TouchableOpacity style={[styles.vaultBtn, { backgroundColor: T.info }]} onPress={() => clientInfo.email && Linking.openURL(`mailto:${clientInfo.email}`)}><FontAwesome name="envelope" size={14} color="#fff" /><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}> Email</Text></TouchableOpacity>
+                      <TouchableOpacity style={[styles.vaultBtn, { backgroundColor: T.success }]} onPress={() => clientInfo.phone && Linking.openURL(`tel:${clientInfo.phone}`)}><FontAwesome name="phone" size={14} color="#fff" /><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}> {t('ventes.call')}</Text></TouchableOpacity>
+                      <TouchableOpacity style={[styles.vaultBtn, { backgroundColor: T.info }]} onPress={() => clientInfo.email && Linking.openURL(`mailto:${clientInfo.email}`)}><FontAwesome name="envelope" size={14} color="#fff" /><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}> {t('ventes.sendEmail')}</Text></TouchableOpacity>
                     </View>
                   ) : (
                     <Text style={{ color: T.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 10, textAlign: 'center' }}>
-                      Acceptez la commande pour débloquer les coordonnées.
+                      {t('ventes.vaultLockedNotice')}
                     </Text>
                   )}
                 </View>
               ) : null}
 
-              <Text style={{ color: T.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 12 }}>ARTICLES</Text>
+              <Text style={{ color: T.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 1.5, marginBottom: 12 }}>{t('ventes.articles')}</Text>
               {selectedOrder?.items?.map((item: any, i: number) => (
                 <View key={i} style={{ flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)', backgroundColor: 'transparent' }}>
                   <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                    <Text style={{ color: T.white, fontWeight: '700', fontSize: 14 }}>{item.name || item.stockItem?.name || 'Produit'}</Text>
+                    <Text style={{ color: T.white, fontWeight: '700', fontSize: 14 }}>{item.name || item.stockItem?.name || t('ventes.product')}</Text>
                     <Text style={{ color: T.textDim, fontSize: 11 }}>{Number(item.quantity)} x {Number(item.price || 0).toFixed(3)} DT</Text>
                   </View>
                   <Text style={{ color: T.primary, fontWeight: '900', fontSize: 14 }}>{(Number(item.quantity) * Number(item.price || 0)).toFixed(3)} DT</Text>
@@ -464,17 +466,17 @@ const fetchConversations = useCallback(async () => {
 
               <View style={{ marginTop: 20, padding: 16, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent', marginBottom: 8 }}>
-                  <Text style={{ color: T.textDim, fontWeight: '700', fontSize: 13 }}>Total</Text>
+                  <Text style={{ color: T.textDim, fontWeight: '700', fontSize: 13 }}>{t('orders.total')}</Text>
                   <Text style={{ color: T.white, fontWeight: '800', fontSize: 13 }}>{Number(selectedOrder?.total || 0).toFixed(3)} DT</Text>
                 </View>
                 {selectedOrder?.settlement && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent', marginBottom: 10 }}>
-                    <Text style={{ color: T.primary, fontWeight: '700', fontSize: 13 }}>Commission</Text>
+                    <Text style={{ color: T.primary, fontWeight: '700', fontSize: 13 }}>{t('ventes.commission')}</Text>
                     <Text style={{ color: T.primary, fontWeight: '800', fontSize: 13 }}>-{Number(selectedOrder.settlement.commissionAmount).toFixed(3)} DT</Text>
                   </View>
                 )}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', backgroundColor: 'transparent' }}>
-                  <Text style={{ color: T.white, fontSize: 16, fontWeight: '900' }}>Net</Text>
+                  <Text style={{ color: T.white, fontSize: 16, fontWeight: '900' }}>{t('ventes.net')}</Text>
                   <Text style={{ color: T.warning, fontSize: 17, fontWeight: '900' }}>
                     {selectedOrder?.settlement
                       ? (Number(selectedOrder.total) - Number(selectedOrder.settlement.commissionAmount)).toFixed(3)
@@ -485,15 +487,15 @@ const fetchConversations = useCallback(async () => {
 
               {selectedOrder?.status === 'PENDING' && (
                 <View style={{ gap: 12, marginTop: 24 }}>
-                  <TouchableOpacity style={[styles.orderPrimaryBtn, { backgroundColor: '#1470cc' }]} onPress={() => confirmOrderAction(selectedOrder.id, 'CONFIRMED', 'Accepter ?')}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Accepter la commande</Text></TouchableOpacity>
-                  <TouchableOpacity style={{ alignItems: 'center', padding: 12 }} onPress={() => confirmOrderAction(selectedOrder.id, 'CANCELLED', 'Refuser ?')}><Text style={{ color: T.primary, fontWeight: '700', fontSize: 14 }}>Refuser</Text></TouchableOpacity>
+                  <TouchableOpacity style={[styles.orderPrimaryBtn, { backgroundColor: '#1470cc' }]} onPress={() => confirmOrderAction(selectedOrder.id, 'CONFIRMED', `${t('orders.accept')} ?`)}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>{t('ventes.acceptOrder')}</Text></TouchableOpacity>
+                  <TouchableOpacity style={{ alignItems: 'center', padding: 12 }} onPress={() => confirmOrderAction(selectedOrder.id, 'CANCELLED', `${t('orders.refuse')} ?`)}><Text style={{ color: T.primary, fontWeight: '700', fontSize: 14 }}>{t('orders.refuse')}</Text></TouchableOpacity>
                 </View>
               )}
               {selectedOrder?.status === 'CONFIRMED' && (
-                <TouchableOpacity style={[styles.orderPrimaryBtn, { backgroundColor: T.info, marginTop: 24 }]} onPress={() => confirmOrderAction(selectedOrder.id, 'SHIPPED', 'Expédier ?')}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Expédier</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.orderPrimaryBtn, { backgroundColor: T.info, marginTop: 24 }]} onPress={() => confirmOrderAction(selectedOrder.id, 'SHIPPED', `${t('ventes.confirmShip')} ?`)}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>{t('ventes.ship')}</Text></TouchableOpacity>
               )}
               {selectedOrder?.status === 'SHIPPED' && (
-                <TouchableOpacity style={[styles.orderPrimaryBtn, { backgroundColor: T.success, marginTop: 24 }]} onPress={() => confirmOrderAction(selectedOrder.id, 'DELIVERED', 'Confirmer livraison ?')}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Confirmer la livraison</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.orderPrimaryBtn, { backgroundColor: T.success, marginTop: 24 }]} onPress={() => confirmOrderAction(selectedOrder.id, 'DELIVERED', `${t('ventes.confirmDeliveryQ')}`)}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>{t('ventes.confirmDelivery')}</Text></TouchableOpacity>
               )}
             </ScrollView>
           </View>
@@ -506,7 +508,7 @@ const fetchConversations = useCallback(async () => {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>Soumettre un devis</Text>
+                <Text style={styles.modalTitle}>{t('ventes.submitQuote')}</Text>
                 <Text style={{ color: T.textMuted, fontSize: 12 }}>{selectedRfq?.title}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setRfqModalVisible(false)}><FontAwesome name="times" size={18} color={T.textDim} /></TouchableOpacity>
@@ -515,16 +517,16 @@ const fetchConversations = useCallback(async () => {
               <View style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: 16, borderRadius: 16, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' }}>
                 <Text style={{ color: T.textDim, fontSize: 13 }}>{selectedRfq?.description}</Text>
                 <View style={{ flexDirection: 'row', gap: 16, marginTop: 12, backgroundColor: 'transparent' }}>
-                  {selectedRfq?.budget && <Text style={{ color: T.warning, fontWeight: '800' }}>Budget: {Number(selectedRfq.budget).toFixed(3)} DT</Text>}
-                  {selectedRfq?.quantity && <Text style={{ color: T.textMuted }}>Qté: {selectedRfq.quantity}</Text>}
+                  {selectedRfq?.budget && <Text style={{ color: T.warning, fontWeight: '800' }}>{t('ventes.proposal')}: {Number(selectedRfq.budget).toFixed(3)} DT</Text>}
+                  {selectedRfq?.quantity && <Text style={{ color: T.textMuted }}>{t('ventes.items')}: {selectedRfq.quantity}</Text>}
                 </View>
               </View>
-              <Text style={{ color: '#cbd5e1', fontSize: 12, fontWeight: '700', marginBottom: 8, marginLeft: 5 }}>Prix proposé (DT) *</Text>
+              <Text style={{ color: '#cbd5e1', fontSize: 12, fontWeight: '700', marginBottom: 8, marginLeft: 5 }}>{t('ventes.proposedPrice')}</Text>
               <TextInput style={styles.inputField} value={quotePrice} onChangeText={setQuotePrice} keyboardType="numeric" placeholder="0.000" placeholderTextColor={T.textDim} />
-              <Text style={{ color: '#cbd5e1', fontSize: 12, fontWeight: '700', marginBottom: 8, marginLeft: 5 }}>Notes</Text>
-              <TextInput style={[styles.inputField, { height: 80 }]} value={quoteNotes} onChangeText={setQuoteNotes} multiline placeholder="Délais, conditions..." placeholderTextColor={T.textDim} />
+              <Text style={{ color: '#cbd5e1', fontSize: 12, fontWeight: '700', marginBottom: 8, marginLeft: 5 }}>{t('ventes.notes')}</Text>
+              <TextInput style={[styles.inputField, { height: 80 }]} value={quoteNotes} onChangeText={setQuoteNotes} multiline placeholder={t('ventes.placeholderNotes')} placeholderTextColor={T.textDim} />
               <TouchableOpacity style={styles.saveBtn} onPress={submitQuote} disabled={submittingQuote}>
-                {submittingQuote ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.saveBtnText}>Envoyer la proposition</Text>}
+                {submittingQuote ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.saveBtnText}>{t('ventes.sendProposal')}</Text>}
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -538,7 +540,7 @@ const fetchConversations = useCallback(async () => {
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <FontAwesome name="user-circle" size={28} color={T.textMuted} />
-                <Text style={styles.modalTitle}>{selectedUser?.name || 'Client'}</Text>
+                <Text style={styles.modalTitle}>{selectedUser?.name || t('orders.client')}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setMsgModalVisible(false)}><FontAwesome name="times" size={18} color={T.textDim} /></TouchableOpacity>
             </View>
@@ -549,7 +551,7 @@ const fetchConversations = useCallback(async () => {
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={{ padding: 16 }}
                 onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-                ListEmptyComponent={loadingMsgHistory ? <ActivityIndicator style={{ padding: 40 }} /> : <Text style={{ color: T.textMuted, textAlign: 'center', padding: 40 }}>Aucun message</Text>}
+                ListEmptyComponent={loadingMsgHistory ? <ActivityIndicator style={{ padding: 40 }} /> : <Text style={{ color: T.textMuted, textAlign: 'center', padding: 40 }}>{t('ventes.noMessages')}</Text>}
                 renderItem={({ item }) => {
                   const own = isOwnMessage(item);
                   return (
@@ -557,7 +559,7 @@ const fetchConversations = useCallback(async () => {
                       <View style={{ maxWidth: '80%', padding: 12, borderRadius: 18, backgroundColor: own ? T.primary : 'rgba(255,255,255,0.06)', borderTopLeftRadius: own ? 18 : 4, borderTopRightRadius: own ? 4 : 18 }}>
                         {item.product && <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: 6, borderRadius: 8, marginBottom: 6 }}><Text style={{ color: '#fff', fontWeight: '700', fontSize: 11 }}>📦 {item.product.name}</Text></View>}
                         <Text style={{ color: own ? '#fff' : T.textDim, fontSize: 14 }}>
-                          {item.isFiltered ? '📢 Message filtré (coordonnées masquées)' : item.filteredContent || item.content}
+                          {item.isFiltered ? t('ventes.filteredMessage') : item.filteredContent || item.content}
                         </Text>
                         <Text style={{ color: own ? 'rgba(255,255,255,0.5)' : T.textMuted, fontSize: 10, marginTop: 4, alignSelf: 'flex-end' }}>{formatTime(item.createdAt)}</Text>
                       </View>
@@ -569,7 +571,7 @@ const fetchConversations = useCallback(async () => {
                 <TextInput
                   style={[styles.inputField, { flex: 1, marginBottom: 0, height: undefined, paddingVertical: 12, maxHeight: 100 }]}
                   value={newMessage} onChangeText={setNewMessage}
-                  placeholder="Votre message..." placeholderTextColor={T.textDim} multiline
+                  placeholder={t('ventes.yourMessage')} placeholderTextColor={T.textDim} multiline
                 />
                 <TouchableOpacity style={[styles.sendBtn, (!newMessage.trim() || sendingMsg) && { opacity: 0.5 }]} onPress={sendMessage} disabled={!newMessage.trim() || sendingMsg}>
                   {sendingMsg ? <ActivityIndicator size="small" color="#fff" /> : <FontAwesome name="send" size={16} color="#fff" />}

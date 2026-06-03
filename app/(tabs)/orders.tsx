@@ -6,6 +6,7 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
+import { useT } from '@/constants/translations';
 
 type OrderTab = 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
 
@@ -14,6 +15,7 @@ export default function OrdersScreen() {
   const styles = createStyles(T);
   const { showAlert } = useAlert();
   const insets = useSafeAreaInsets();
+  const t = useT();
 
   // Progressive Reveal Supplier Vault states
   const [clientInfo, setClientInfo] = useState<any>(null);
@@ -81,41 +83,41 @@ export default function OrdersScreen() {
         fetchClientInfo(orderId);
       }
     } catch (error) {
-      showAlert({ title: 'Erreur', message: 'Impossible de mettre à jour le statut.', type: 'error' });
+      showAlert({ title: t('general.error'), message: t('orders.updateFailed'), type: 'error' });
     }
   };
 
   const confirmAction = (orderId: string, newStatus: string, message: string) => {
     showAlert({
-      title: 'Confirmation',
+      title: t('ventes.confirmation'),
       message,
       type: 'warning',
       buttons: [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Confirmer', style: 'default', onPress: () => handleUpdateStatus(orderId, newStatus) }
+        { text: t('actions.cancel'), style: 'cancel' },
+        { text: t('actions.confirm'), style: 'default', onPress: () => handleUpdateStatus(orderId, newStatus) }
       ]
     });
   };
 
   const TABS: { key: OrderTab; label: string; icon: string; color: string }[] = [
-    { key: 'PENDING',   label: 'Nouvelles',   icon: 'clock-o',        color: '#ff9500' },
-    { key: 'CONFIRMED', label: 'Acceptées',   icon: 'check-circle',   color: '#1470cc' },
-    { key: 'SHIPPED',   label: 'Expédiées',   icon: 'truck',          color: '#1470cc' },
-    { key: 'DELIVERED', label: 'Livrées / Hist.', icon: 'history',        color: '#22ac38' },
-    { key: 'CANCELLED', label: 'Annulées',    icon: 'times-circle',   color: '#e64545' },
+    { key: 'PENDING',   label: t('orders.new'),   icon: 'clock-o',        color: '#ff9500' },
+    { key: 'CONFIRMED', label: t('orders.accepted'),   icon: 'check-circle',   color: '#1470cc' },
+    { key: 'SHIPPED',   label: t('orders.shipped'),   icon: 'truck',          color: '#1470cc' },
+    { key: 'DELIVERED', label: t('orders.delivered'), icon: 'history',        color: '#22ac38' },
+    { key: 'CANCELLED', label: t('orders.cancelled'),    icon: 'times-circle',   color: '#e64545' },
   ];
 
   const STATUS_LABELS: Record<string, string> = {
-    PENDING:   '🕐 En attente',
-    CONFIRMED: '✅ Acceptée',
-    SHIPPED:   '🚚 Expédiée',
-    DELIVERED: '📦 Livrée',
-    CANCELLED: '❌ Annulée',
-    STOCKED:   '✔ En stock',
+    PENDING:   `🕐 ${t('orders.pending')}`,
+    CONFIRMED: `✅ ${t('orders.confirmed')}`,
+    SHIPPED:   `🚚 ${t('orders.shipped')}`,
+    DELIVERED: `📦 ${t('orders.delivered')}`,
+    CANCELLED: `❌ ${t('orders.cancelled')}`,
+    STOCKED:   `✔ ${t('orders.stocked')}`,
   };
 
   const getItemName = (item: any) =>
-    item.name || item.stockItem?.name || 'Produit inconnu';
+    item.name || item.stockItem?.name || t('orders.unknownProduct');
 
   const filteredOrders = orders.filter(o => {
     if (activeTab === 'DELIVERED') return o.status === 'DELIVERED' || o.status === 'STOCKED';
@@ -134,7 +136,7 @@ export default function OrdersScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]}>
-      <Text style={styles.sectionTitle}>Mes Commandes</Text>
+      <Text style={styles.sectionTitle}>{t('orders.title')}</Text>
 
       {/* Tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20, flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
@@ -171,7 +173,7 @@ export default function OrdersScreen() {
           <View style={styles.emptyState}>
             <FontAwesome name={activeTabMeta.icon as any} size={40} color="#1e293b" style={{ marginBottom: 15 }} />
             <Text style={styles.emptyText}>
-               {activeTab === 'PENDING' ? 'Aucune nouvelle commande' : `Aucune commande ${activeTabMeta.label.toLowerCase()}`}
+               {activeTab === 'PENDING' ? t('orders.noNewOrders') : `${t('orders.noOrders')} ${activeTabMeta.label.toLowerCase()}`}
             </Text>
           </View>
         )}
@@ -179,7 +181,7 @@ export default function OrdersScreen() {
           <TouchableOpacity key={idx} style={styles.orderCard} onPress={() => setSelectedOrder(order)}>
             <View style={styles.cardTop}>
               <View style={{ backgroundColor: 'transparent', flex: 1 }}>
-                <Text style={styles.storeName}>{order.store?.name || 'Café inconnu'}</Text>
+                <Text style={styles.storeName}>{order.store?.name || t('orders.unknownStore')}</Text>
                 <Text style={styles.orderDate}>
                   #{(order.id || '').slice(-6).toUpperCase()} — {new Date(order.createdAt).toLocaleDateString('fr-FR')}
                 </Text>
@@ -196,7 +198,7 @@ export default function OrdersScreen() {
               </View>
             </View>
             <View style={styles.cardBottom}>
-              <Text style={styles.itemCount}>{order.items?.length || 0} article(s)</Text>
+              <Text style={styles.itemCount}>{order.items?.length || 0} {t('orders.itemCount')}</Text>
               <FontAwesome name="chevron-right" size={12} color="#475569" />
             </View>
 
@@ -205,17 +207,17 @@ export default function OrdersScreen() {
               <View style={styles.quickActions}>
                 <TouchableOpacity
                   style={[styles.quickBtn, { backgroundColor: 'rgba(230,69,69,0.1)', borderColor: '#e64545' }]}
-                  onPress={() => confirmAction(order.id, 'CANCELLED', 'Refuser cette commande ?')}
+                  onPress={() => confirmAction(order.id, 'CANCELLED', t('orders.confirmRefuse'))}
                 >
                   <FontAwesome name="times" size={12} color="#e64545" />
-                  <Text style={[styles.quickBtnText, { color: '#e64545' }]}>Refuser</Text>
+                  <Text style={[styles.quickBtnText, { color: '#e64545' }]}>{t('orders.refuse')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.quickBtn, { backgroundColor: 'rgba(20,112,204,0.1)', borderColor: '#1470cc', flex: 2 }]}
-                  onPress={() => confirmAction(order.id, 'CONFIRMED', 'Accepter et préparer cette commande ?')}
+                  onPress={() => confirmAction(order.id, 'CONFIRMED', t('orders.confirmAccept'))}
                 >
                   <FontAwesome name="check" size={12} color="#1470cc" />
-                  <Text style={[styles.quickBtnText, { color: '#1470cc' }]}>Accepter</Text>
+                  <Text style={[styles.quickBtnText, { color: '#1470cc' }]}>{t('orders.accept')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -230,7 +232,7 @@ export default function OrdersScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>Commande #{selectedOrder?.id?.slice(-6).toUpperCase()}</Text>
+                <Text style={styles.modalTitle}>{t('orders.orderId')}{selectedOrder?.id?.slice(-6).toUpperCase()}</Text>
                 <Text style={styles.modalSub}>{selectedOrder?.store?.name} — {selectedOrder?.store?.city}</Text>
               </View>
               <TouchableOpacity onPress={() => setSelectedOrder(null)}>
@@ -241,7 +243,7 @@ export default function OrdersScreen() {
             <ScrollView style={{ padding: 20 }} contentContainerStyle={{ paddingBottom: 40 }}>
               {/* Status badge */}
               <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Statut actuel</Text>
+                <Text style={styles.statusLabel}>{t('orders.currentStatus')}</Text>
                 <View style={[styles.statusBadge, {
                   backgroundColor: selectedOrder?.status === 'PENDING' ? 'rgba(255,149,0,0.15)' :
                     selectedOrder?.status === 'CONFIRMED' ? 'rgba(20,112,204,0.15)' :
@@ -265,7 +267,7 @@ export default function OrdersScreen() {
               {loadingClient ? (
                 <View style={{ padding: 20, alignItems: 'center', backgroundColor: 'transparent' }}>
                   <ActivityIndicator size="small" color="#ff9500" />
-                  <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 8 }}>Déchiffrement sécurisé...</Text>
+                  <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 8 }}>{t('orders.decrypting')}</Text>
                 </View>
               ) : clientInfo ? (
                 <View style={[styles.vaultCard, clientInfo.contactUnlocked ? styles.vaultUnlocked : styles.vaultLocked]}>
@@ -276,34 +278,34 @@ export default function OrdersScreen() {
                       color={clientInfo.contactUnlocked ? "#22ac38" : "#ff9500"} 
                     />
                     <Text style={[styles.vaultTitle, { color: clientInfo.contactUnlocked ? "#22ac38" : "#ff9500" }]}>
-                      {clientInfo.contactUnlocked ? "VAULT STAGE 3 — DÉVERROUILLÉ" : "VAULT STAGE 1 — ANONYMISÉ"}
+                      {clientInfo.contactUnlocked ? t('orders.vaultStage3') : t('orders.vaultStage1')}
                     </Text>
                   </View>
                   
                   <Text style={styles.vaultClientName}>{clientInfo.clientName}</Text>
                   
                   <View style={styles.vaultInfoRow}>
-                    <Text style={styles.vaultInfoLabel}>👤 Responsable</Text>
+                    <Text style={styles.vaultInfoLabel}>{t('orders.contactName')}</Text>
                     <Text style={styles.vaultInfoValue}>{clientInfo.ownerName}</Text>
                   </View>
 
                   <View style={styles.vaultInfoRow}>
-                    <Text style={styles.vaultInfoLabel}>🏙 Ville</Text>
+                    <Text style={styles.vaultInfoLabel}>{t('orders.contactCity')}</Text>
                     <Text style={styles.vaultInfoValue}>{clientInfo.city}</Text>
                   </View>
 
                   <View style={styles.vaultInfoRow}>
-                    <Text style={styles.vaultInfoLabel}>📍 Adresse</Text>
+                    <Text style={styles.vaultInfoLabel}>{t('orders.contactAddress')}</Text>
                     <Text style={styles.vaultInfoValue}>{clientInfo.address}</Text>
                   </View>
 
                   <View style={styles.vaultInfoRow}>
-                    <Text style={styles.vaultInfoLabel}>📞 Téléphone</Text>
+                    <Text style={styles.vaultInfoLabel}>{t('orders.contactPhone')}</Text>
                     <Text style={styles.vaultInfoValue}>{clientInfo.phone}</Text>
                   </View>
 
                   <View style={styles.vaultInfoRow}>
-                    <Text style={styles.vaultInfoLabel}>✉ Email</Text>
+                    <Text style={styles.vaultInfoLabel}>{t('orders.contactEmail')}</Text>
                     <Text style={styles.vaultInfoValue}>{clientInfo.email}</Text>
                   </View>
 
@@ -318,7 +320,7 @@ export default function OrdersScreen() {
                         }}
                       >
                         <FontAwesome name="phone" size={14} color="#fff" />
-                        <Text style={styles.vaultBtnText}>Appeler</Text>
+                        <Text style={styles.vaultBtnText}>{t('orders.call')}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity 
@@ -330,19 +332,19 @@ export default function OrdersScreen() {
                         }}
                       >
                         <FontAwesome name="envelope" size={14} color="#fff" />
-                        <Text style={styles.vaultBtnText}>Email</Text>
+                        <Text style={styles.vaultBtnText}>{t('orders.email')}</Text>
                       </TouchableOpacity>
                     </View>
                   ) : (
                     <Text style={styles.vaultNotice}>
-                      💡 Validez et acceptez cette commande pour déverrouiller instantanément le numéro et l'adresse de livraison du client.
+                      {t('orders.vaultLockedNotice')}
                     </Text>
                   )}
                 </View>
               ) : null}
 
               {/* Items */}
-              <Text style={styles.sectionLabel}>ARTICLES COMMANDÉS</Text>
+              <Text style={styles.sectionLabel}>{t('orders.itemsLabel')}</Text>
               {selectedOrder?.items?.map((item: any, i: number) => (
                 <View key={i} style={styles.itemRow}>
                   <View style={{ flex: 1, backgroundColor: 'transparent' }}>
@@ -356,19 +358,19 @@ export default function OrdersScreen() {
               {/* Total and Commission breakdown */}
               <View style={{ marginTop: 25, padding: 15, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, backgroundColor: 'transparent' }}>
-                  <Text style={{ color: '#94a3b8', fontSize: 13, fontWeight: '700' }}>Total Brut</Text>
+                  <Text style={{ color: '#94a3b8', fontSize: 13, fontWeight: '700' }}>{t('orders.totalBrut')}</Text>
                   <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>{Number(selectedOrder?.total || 0).toFixed(3)} DT</Text>
                 </View>
                 
                 {selectedOrder?.settlement && (
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, backgroundColor: 'transparent' }}>
-                    <Text style={{ color: '#e64545', fontSize: 13, fontWeight: '700' }}>Frais Marketplace</Text>
+                    <Text style={{ color: '#e64545', fontSize: 13, fontWeight: '700' }}>{t('orders.commission')}</Text>
                     <Text style={{ color: '#e64545', fontSize: 13, fontWeight: '800' }}>-{Number(selectedOrder.settlement.commissionAmount).toFixed(3)} DT</Text>
                   </View>
                 )}
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)', backgroundColor: 'transparent' }}>
-                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Total Net</Text>
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>{t('orders.totalNet')}</Text>
                   <Text style={{ color: '#ff9500', fontSize: 18, fontWeight: '900' }}>
                     {selectedOrder?.settlement 
                       ? (Number(selectedOrder.total) - Number(selectedOrder.settlement.commissionAmount)).toFixed(3)
@@ -381,27 +383,27 @@ export default function OrdersScreen() {
               {/* Action buttons based on status */}
               {selectedOrder?.status === 'PENDING' && (
                 <View style={{ gap: 12, marginTop: 25 }}>
-                  <TouchableOpacity style={styles.primaryBtn} onPress={() => confirmAction(selectedOrder.id, 'CONFIRMED', 'Accepter et préparer cette commande ?')}>
+                  <TouchableOpacity style={styles.primaryBtn} onPress={() => confirmAction(selectedOrder.id, 'CONFIRMED', t('orders.confirmAccept'))}>
                     <FontAwesome name="check-circle" size={18} color="#fff" />
-                    <Text style={styles.primaryBtnText}>✅ Accepter la commande</Text>
+                    <Text style={styles.primaryBtnText}>{t('orders.confirmAcceptOrder')}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.cancelBtn} onPress={() => confirmAction(selectedOrder.id, 'CANCELLED', 'Refuser définitivement cette commande ?')}>
-                    <Text style={styles.cancelBtnText}>❌ Refuser la commande</Text>
+                  <TouchableOpacity style={styles.cancelBtn} onPress={() => confirmAction(selectedOrder.id, 'CANCELLED', t('orders.confirmRefuseOrder'))}>
+                    <Text style={styles.cancelBtnText}>{t('orders.refuseOrder')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
 
               {selectedOrder?.status === 'CONFIRMED' && (
-                <TouchableOpacity style={[styles.primaryBtn, { marginTop: 25, backgroundColor: '#1470cc' }]} onPress={() => confirmAction(selectedOrder.id, 'SHIPPED', 'Marquer comme expédiée ? La livraison est en route.')}>
+                <TouchableOpacity style={[styles.primaryBtn, { marginTop: 25, backgroundColor: '#1470cc' }]} onPress={() => confirmAction(selectedOrder.id, 'SHIPPED', t('orders.confirmShip'))}>
                   <FontAwesome name="truck" size={18} color="#fff" />
-                  <Text style={styles.primaryBtnText}>🚚 Expédier la commande</Text>
+                  <Text style={styles.primaryBtnText}>{t('orders.shipOrder')}</Text>
                 </TouchableOpacity>
               )}
 
               {selectedOrder?.status === 'SHIPPED' && (
-                <TouchableOpacity style={[styles.primaryBtn, { marginTop: 25, backgroundColor: '#22ac38' }]} onPress={() => confirmAction(selectedOrder.id, 'DELIVERED', 'Confirmer que la marchandise a été remise au client ?')}>
+                <TouchableOpacity style={[styles.primaryBtn, { marginTop: 25, backgroundColor: '#22ac38' }]} onPress={() => confirmAction(selectedOrder.id, 'DELIVERED', t('orders.confirmDeliver'))}>
                   <FontAwesome name="cube" size={18} color="#fff" />
-                  <Text style={styles.primaryBtnText}>📦 Confirmer la livraison</Text>
+                  <Text style={styles.primaryBtnText}>{t('orders.deliverConfirm')}</Text>
                 </TouchableOpacity>
               )}
 
@@ -409,7 +411,7 @@ export default function OrdersScreen() {
                 <View style={[styles.infoBox, { backgroundColor: 'rgba(34,172,56,0.1)', borderColor: 'rgba(34,172,56,0.2)' }]}>
                   <FontAwesome name="info-circle" size={16} color="#22ac38" />
                   <Text style={{ color: '#22ac38', fontSize: 12, fontWeight: '700', flex: 1 }}>
-                    En attente de confirmation de réception par le café. La commission sera déduite à ce moment.
+                    {t('orders.deliveryPending')}
                   </Text>
                 </View>
               )}
@@ -418,7 +420,7 @@ export default function OrdersScreen() {
                 <View style={[styles.infoBox, { backgroundColor: 'rgba(20,112,204,0.1)', borderColor: 'rgba(99,102,241,0.2)' }]}>
                   <FontAwesome name="check-square-o" size={16} color="#1470cc" />
                   <Text style={{ color: '#1470cc', fontSize: 12, fontWeight: '700', flex: 1 }}>
-                    Commande finalisée. La commission a été déduite de votre wallet.
+                    {t('orders.orderFinalized')}
                   </Text>
                 </View>
               )}

@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { ApiService } from '@/services/api';
 import { AuthService } from '@/services/auth';
 import { useAlert } from '@/components/AlertContext';
+import { useT } from '../constants/translations';
 import Animated, { useSharedValue, useAnimatedStyle, withSequence, withTiming, withSpring } from 'react-native-reanimated';
 
 export default function UnlockScreen() {
@@ -13,6 +14,7 @@ export default function UnlockScreen() {
   const router = useRouter();
   const { showAlert } = useAlert();
   const shakeOffset = useSharedValue(0);
+  const t = useT();
 
   const shakeStyle = useAnimatedStyle(() => {
     return {
@@ -114,8 +116,8 @@ export default function UnlockScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.brandTitle}>RACHMA LITE</Text>
-      <Text style={styles.promptText}>Accès Personnel</Text>
+      <Text style={styles.brandTitle}>{t('unlock.title')}</Text>
+      <Text style={styles.promptText}>{t('unlock.enterPin')}</Text>
 
       {/* PIN Dots */}
       <Animated.View style={[styles.dotsContainer, shakeStyle]}>
@@ -144,7 +146,7 @@ export default function UnlockScreen() {
       </View>
 
       <TouchableOpacity style={styles.unpairBtn} onPress={handleUnpair}>
-        <Text style={styles.unpairText}>RÉINITIALISER LE TERMINAL</Text>
+        <Text style={styles.unpairText}>{t('unlock.reset')}</Text>
       </TouchableOpacity>
     </View>
   );

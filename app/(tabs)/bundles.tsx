@@ -8,6 +8,7 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme } from '@/components/useTheme';
+import { useT } from '@/constants/translations';
 
 export default function BundlesScreen() {
   const T = useTheme();
@@ -47,7 +48,7 @@ export default function BundlesScreen() {
       setVendorProducts(Array.isArray(productsData) ? productsData : []);
     } catch (error) {
       console.error("Failed to fetch bundles data:", error);
-      showAlert({ title: "Erreur", message: "Impossible de charger les données.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('bundles.loadError'), type: 'error' });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -62,6 +63,8 @@ export default function BundlesScreen() {
       }
     });
   }, [fetchData]);
+
+  const t = useT();
 
   const resetForm = () => {
     setName('');
@@ -98,8 +101,8 @@ export default function BundlesScreen() {
   }, 0);
 
   const handleSave = async () => {
-    if (!name) return showAlert({ title: "Erreur", message: "Le nom du pack est requis.", type: 'error' });
-    if (selectedItems.length === 0) return showAlert({ title: "Erreur", message: "Ajoutez au moins un produit.", type: 'error' });
+    if (!name) return showAlert({ title: t('general.error'), message: t('catalog.bundleNameRequired'), type: 'error' });
+    if (selectedItems.length === 0) return showAlert({ title: t('general.error'), message: t('catalog.addProductRequired'), type: 'error' });
     try {
       const payload = {
         name,
@@ -113,36 +116,36 @@ export default function BundlesScreen() {
 
       if (editingBundle) {
         await ApiService.put(`/management/vendor/bundles/${editingBundle.id}`, payload);
-        showAlert({ title: "Succès", message: "Pack mis à jour.", type: 'success' });
+        showAlert({ title: t('general.success'), message: t('catalog.bundleUpdated'), type: 'success' });
       } else {
         await ApiService.post(`/management/vendor/bundles/${vendorId}`, payload);
-        showAlert({ title: "Succès", message: "Pack créé.", type: 'success' });
+        showAlert({ title: t('general.success'), message: t('catalog.bundleCreated'), type: 'success' });
       }
       setIsModalVisible(false);
       if (vendorId) fetchData(vendorId);
     } catch (error) {
-      showAlert({ title: "Erreur", message: "Impossible de sauvegarder le pack.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('bundles.saveError'), type: 'error' });
     }
   };
 
   const handleDelete = (bundle: any) => {
     showAlert({
-      title: "Supprimer le pack",
-      message: `Supprimer "${bundle.name}" ? Cette action est irréversible.`,
+      title: t('bundles.deleteTitle'),
+      message: `${t('catalog.delete')} "${bundle.name}" ? ${t('bundles.deleteWarning')}`,
       type: 'warning',
       buttons: [
-        { text: "Annuler", style: 'cancel' },
+        { text: t('catalog.cancel'), style: 'cancel' },
         {
-          text: "Supprimer",
+          text: t('catalog.delete'),
           style: 'destructive',
           onPress: async () => {
             setDeletingId(bundle.id);
             try {
               await ApiService.delete(`/management/vendor/bundles/${bundle.id}`);
               if (vendorId) fetchData(vendorId);
-              showAlert({ title: "Supprimé", message: "Pack supprimé.", type: 'success' });
+              showAlert({ title: t('general.success'), message: t('catalog.bundleDeleted'), type: 'success' });
             } catch {
-              showAlert({ title: "Erreur", message: "Échec de la suppression.", type: 'error' });
+              showAlert({ title: t('general.error'), message: t('catalog.deleteError'), type: 'error' });
             } finally {
               setDeletingId(null);
             }
@@ -177,7 +180,7 @@ export default function BundlesScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showAlert({ title: "Accès refusé", message: "Nous avons besoin de l'accès à vos photos.", type: 'warning' });
+      showAlert({ title: t('general.accessDenied'), message: t('products.photosAccessRequired'), type: 'warning' });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -195,7 +198,7 @@ export default function BundlesScreen() {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      showAlert({ title: "Erreur", message: "Accès caméra refusé.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.cameraDenied'), type: 'error' });
       return;
     }
 
@@ -238,7 +241,7 @@ export default function BundlesScreen() {
       }
     } catch (error) {
       console.error("Bundle upload error:", error);
-      showAlert({ title: "Erreur", message: "Échec de l'upload.", type: 'error' });
+      showAlert({ title: t('general.error'), message: t('catalog.uploadError'), type: 'error' });
     } finally {
       setUploading(false);
     }
@@ -250,7 +253,7 @@ export default function BundlesScreen() {
 
   const getProductName = (prodId: string) => {
     const prod = vendorProducts.find(p => p.id === prodId);
-    return prod?.productStandard?.name || prod?.name || 'Produit inconnu';
+    return prod?.productStandard?.name || prod?.name || t('catalog.unknown');
   };
 
   const getProductPrice = (prodId: string) => {
@@ -279,12 +282,12 @@ export default function BundlesScreen() {
       >
         <View style={styles.header}>
           <View style={{ backgroundColor: 'transparent' }}>
-            <Text style={styles.title}>Mes Packs</Text>
-            <Text style={styles.headerSub}>{bundles.length} pack{bundles.length !== 1 ? 's' : ''}</Text>
+            <Text style={styles.title}>{t('bundles.myBundles')}</Text>
+            <Text style={styles.headerSub}>{bundles.length} {bundles.length !== 1 ? t('catalog.bundles').toLowerCase() : t('catalog.bundle_singular')}</Text>
           </View>
           <TouchableOpacity style={styles.addBtn} onPress={() => handleOpenModal()}>
             <FontAwesome name="plus" size={14} color="#fff" />
-            <Text style={styles.addBtnText}> Créer</Text>
+            <Text style={styles.addBtnText}> {t('bundles.create')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -311,18 +314,18 @@ export default function BundlesScreen() {
               <View style={styles.bundleInfo}>
                 <Text style={styles.bundleName} numberOfLines={1}>{bundle.name}</Text>
                 <Text style={styles.bundleDetails}>
-                  {bundle.items?.length || 0} produit{(bundle.items?.length || 0) !== 1 ? 's' : ''}
+                  {bundle.items?.length || 0} {bundle.items?.length !== 1 ? t('catalog.products').toLowerCase() : t('catalog.product_singular')}
                 </Text>
                 <Text style={styles.bundlePrice}>{Number(bundle.price).toFixed(3)} DT</Text>
                 {totalValue > 0 && (
                   <Text style={styles.bundleValue}>
-                    Valeur: {totalValue.toFixed(3)} DT
+                    {t('bundles.value')}: {totalValue.toFixed(3)} DT
                   </Text>
                 )}
                 {bundle.isFeatured && (
                   <View style={styles.bundleFeaturedTag}>
                     <FontAwesome name="star" size={10} color={T.primary} style={{ marginRight: 3 }} />
-                    <Text style={styles.bundleFeaturedText}>En avant</Text>
+                    <Text style={styles.bundleFeaturedText}>{t('catalog.featured')}</Text>
                   </View>
                 )}
               </View>
@@ -348,8 +351,8 @@ export default function BundlesScreen() {
             <View style={styles.emptyIcon}>
               <FontAwesome name="gift" size={40} color="rgba(255,255,255,0.06)" />
             </View>
-            <Text style={styles.emptyText}>Aucun pack créé pour le moment</Text>
-            <Text style={styles.emptySubText}>Assemblez vos produits en packs pour augmenter vos ventes</Text>
+            <Text style={styles.emptyText}>{t('bundles.noBundles')}</Text>
+            <Text style={styles.emptySubText}>{t('bundles.emptySubtext')}</Text>
           </View>
         )}
         <View style={{ height: 120 }} />
@@ -361,8 +364,8 @@ export default function BundlesScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={{ backgroundColor: 'transparent' }}>
-                <Text style={styles.modalTitle}>{editingBundle ? 'Modifier le Pack' : 'Composer un Pack'}</Text>
-                <Text style={styles.modalSub}>{editingBundle ? 'Modifiez les détails' : 'Assemblez des produits'}</Text>
+                <Text style={styles.modalTitle}>{editingBundle ? t('bundles.edit') : t('bundles.compose')}</Text>
+                <Text style={styles.modalSub}>{editingBundle ? t('bundles.editSub') : t('bundles.composeSub')}</Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsModalVisible(false)}>
                 <FontAwesome name="times" size={18} color={T.textDim} />
@@ -375,28 +378,28 @@ export default function BundlesScreen() {
               showsVerticalScrollIndicator={false}
             >
               {/* Informations */}
-              <Text style={styles.formSectionTitle}>Informations du pack</Text>
+              <Text style={styles.formSectionTitle}>{t('bundles.bundleInfo')}</Text>
 
-              <Text style={styles.label}>Nom du pack *</Text>
+              <Text style={styles.label}>{t('bundles.name')} *</Text>
               <TextInput
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
-                placeholder="Ex: Pack Découverte"
+                placeholder={t('bundles.namePlaceholder')}
                 placeholderTextColor={T.textDim}
               />
               
-              <Text style={styles.label}>Description</Text>
+              <Text style={styles.label}>{t('catalog.description')}</Text>
               <TextInput
                 style={[styles.input, styles.inputMultiline]}
                 value={description}
                 onChangeText={setDescription}
                 multiline
-                placeholder="Détails de l'offre..."
+                placeholder={t('bundles.descPlaceholder')}
                 placeholderTextColor={T.textDim}
               />
 
-              <Text style={styles.label}>Prix de vente (DT)</Text>
+              <Text style={styles.label}>{t('bundles.price')}</Text>
               <TextInput
                 style={styles.input}
                 value={price}
@@ -410,7 +413,7 @@ export default function BundlesScreen() {
               {selectedItems.length > 0 && (
                 <View style={styles.valueCard}>
                   <View style={{ backgroundColor: 'transparent', flex: 1 }}>
-                    <Text style={styles.valueLabel}>Valeur totale des produits</Text>
+                    <Text style={styles.valueLabel}>{t('bundles.totalValue')}</Text>
                     <Text style={styles.valueAmount}>{computedPrice.toFixed(3)} DT</Text>
                   </View>
                   <FontAwesome name="calculator" size={20} color={T.primary} />
@@ -418,16 +421,16 @@ export default function BundlesScreen() {
               )}
 
               {/* Images */}
-              <Text style={styles.formSectionTitle}>Photos</Text>
+              <Text style={styles.formSectionTitle}>{t('catalog.photos')}</Text>
 
               <View style={styles.imageActions}>
                 <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: T.glassGreen }]} onPress={pickImage}>
                   <FontAwesome name="photo" size={16} color={T.success} />
-                  <Text style={[styles.imageActionText, { color: T.success }]}>Galerie</Text>
+                  <Text style={[styles.imageActionText, { color: T.success }]}>{t('catalog.gallery')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.imageActionBtn, { backgroundColor: T.glassBlue }]} onPress={takePhoto}>
                   <FontAwesome name="camera" size={16} color={T.info} />
-                  <Text style={[styles.imageActionText, { color: T.info }]}>Caméra</Text>
+                  <Text style={[styles.imageActionText, { color: T.info }]}>{t('catalog.camera')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -436,7 +439,7 @@ export default function BundlesScreen() {
                   style={[styles.input, { flex: 1, marginBottom: 0 }]}
                   value={newImageUrl}
                   onChangeText={setNewImageUrl}
-                  placeholder="Ou URL d'image..."
+                  placeholder={t('bundles.imageUrlPlaceholder')}
                   placeholderTextColor={T.textDim}
                 />
                 <TouchableOpacity style={styles.imageUrlAddBtn} onPress={addImage}>
@@ -447,7 +450,7 @@ export default function BundlesScreen() {
               {uploading && (
                 <View style={styles.uploadingRow}>
                   <ActivityIndicator size="small" color={T.primary} />
-                  <Text style={{ color: T.primary, fontSize: 13 }}>Chargement...</Text>
+                  <Text style={{ color: T.primary, fontSize: 13 }}>{t('general.loading')}</Text>
                 </View>
               )}
 
@@ -466,7 +469,7 @@ export default function BundlesScreen() {
 
               {/* Produits sélectionnés */}
               <Text style={styles.formSectionTitle}>
-                Produits Inclus ({selectedItems.length})
+                {t('bundles.products')} ({selectedItems.length})
               </Text>
 
               {selectedItems.map((item, idx) => (
@@ -497,7 +500,7 @@ export default function BundlesScreen() {
               ))}
 
               {/* Ajouter des produits */}
-              <Text style={styles.formSectionTitle}>Ajouter des produits</Text>
+              <Text style={styles.formSectionTitle}>{t('bundles.addProducts')}</Text>
 
               <View style={styles.productSearchBar}>
                 <FontAwesome name="search" size={14} color={T.textDim} style={{ marginRight: 8 }} />
@@ -505,7 +508,7 @@ export default function BundlesScreen() {
                   style={styles.productSearchInput}
                   value={productSearch}
                   onChangeText={setProductSearch}
-                  placeholder="Chercher un produit..."
+                  placeholder={t('catalog.search')}
                   placeholderTextColor={T.textDim}
                 />
                 {productSearch ? (
@@ -542,10 +545,10 @@ export default function BundlesScreen() {
                 ) : (
                   <Text style={styles.noProducts}>
                     {productSearch
-                      ? 'Aucun produit trouvé'
+                      ? t('catalog.noProducts')
                       : vendorProducts.length === 0
-                        ? 'Créez d\'abord des produits'
-                        : 'Tous les produits sont déjà ajoutés'}
+                        ? t('bundles.createProductsFirst')
+                        : t('bundles.allProductsAdded')}
                   </Text>
                 )}
               </View>
@@ -553,8 +556,8 @@ export default function BundlesScreen() {
               {/* Upsell toggle */}
               <View style={styles.upsellRow}>
                 <View style={{ backgroundColor: 'transparent', flex: 1 }}>
-                  <Text style={styles.upsellRowLabel}>Mettre en avant</Text>
-                  <Text style={styles.upsellRowDesc}>Afficher ce pack en vedette</Text>
+                  <Text style={styles.upsellRowLabel}>{t('bundles.featuredToggle')}</Text>
+                  <Text style={styles.upsellRowDesc}>{t('bundles.featuredToggleDesc')}</Text>
                 </View>
                 <TouchableOpacity onPress={() => setIsFeatured(!isFeatured)}>
                   <FontAwesome
@@ -568,7 +571,7 @@ export default function BundlesScreen() {
               <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
                 <FontAwesome name="check" size={18} color="#fff" style={{ marginRight: 10 }} />
                 <Text style={styles.saveBtnText}>
-                  {editingBundle ? 'Mettre à jour' : 'Publier le Pack'}
+                  {editingBundle ? t('catalog.update') : t('bundles.publish')}
                 </Text>
               </TouchableOpacity>
             </ScrollView>

@@ -8,6 +8,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAlert } from '@/components/AlertContext';
 import { useTheme, ThemeColors } from '@/components/useTheme';
+import { useT } from '@/constants/translations';
 
 export default function DashboardScreen() {
   const T = useTheme();
@@ -23,6 +24,7 @@ export default function DashboardScreen() {
   const [showNotifications, setShowNotifications] = useState(false);
   const router = useRouter();
   const { showAlert } = useAlert();
+  const t = useT();
 
   // Load the real vendorId from secure storage
   useEffect(() => {
@@ -38,9 +40,9 @@ export default function DashboardScreen() {
       if (Platform.OS === 'web') return;
 
       const onBackPress = () => {
-        Alert.alert('Quitter l\'application', 'Voulez-vous vraiment quitter Rachma Vendor ?', [
-          { text: 'Annuler', style: 'cancel', onPress: () => {} },
-          { text: 'Quitter', style: 'destructive', onPress: () => BackHandler.exitApp() },
+        Alert.alert(t('dash.exitApp'), t('dash.confirmExit'), [
+          { text: t('dash.cancel'), style: 'cancel', onPress: () => {} },
+          { text: t('dash.quit'), style: 'destructive', onPress: () => BackHandler.exitApp() },
         ]);
         return true; // prevent default
       };
@@ -52,7 +54,7 @@ export default function DashboardScreen() {
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Voulez-vous vraiment vous déconnecter ?')) {
+      if (window.confirm(t('dash.confirmLogout'))) {
         AuthService.clearSession().then(() => {
           router.replace('/login');
         });
@@ -61,13 +63,13 @@ export default function DashboardScreen() {
     }
 
     showAlert({
-      title: 'Déconnexion',
-      message: 'Voulez-vous vraiment vous déconnecter ?',
+      title: t('dash.logout'),
+      message: t('dash.confirmLogout'),
       type: 'warning',
       buttons: [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('dash.cancel'), style: 'cancel' },
         {
-          text: 'Déconnecter',
+          text: t('dash.disconnect'),
           style: 'destructive',
           onPress: async () => {
             await AuthService.clearSession();
@@ -93,8 +95,8 @@ export default function DashboardScreen() {
       // Check for new orders
       if (lastOrderCount > 0 && summary.orderCount > lastOrderCount) {
         showAlert({
-          title: "🛒 Nouvelle Commande !",
-          message: "Vous avez reçu une nouvelle commande sur la Marketplace.",
+          title: `🛒 ${t('dash.newOrder')}`,
+          message: t('dash.newOrderMsg'),
           type: 'success'
         });
       }
@@ -134,7 +136,7 @@ export default function DashboardScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.warning} />
-        <Text style={styles.loadingText}>Chargement de votre espace vendeur...</Text>
+        <Text style={styles.loadingText}>{t('dash.loading')}</Text>
       </View>
     );
   }
@@ -167,11 +169,11 @@ export default function DashboardScreen() {
               <FontAwesome name="exclamation-triangle" size={24} color={T.white} />
             </View>
             <View style={styles.alertTextContainer}>
-              <Text style={styles.alertTitle}>Produits Invisibles</Text>
-              <Text style={styles.alertSub}>{data.suspensionReason || "Votre compte nécessite une régularisation."}</Text>
+              <Text style={styles.alertTitle}>{t('dash.invisibleProducts')}</Text>
+              <Text style={styles.alertSub}>{data.suspensionReason || t('dash.suspended')}</Text>
             </View>
             <TouchableOpacity style={styles.alertActionBtn} onPress={() => router.push('/wallet')}>
-              <Text style={styles.alertActionText}>Payer</Text>
+              <Text style={styles.alertActionText}>{t('dash.pay')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -179,8 +181,8 @@ export default function DashboardScreen() {
         {/* Header Section */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.welcomeTitle}>Espace Vendeur 👋</Text>
-            <Text style={styles.subtitle}>{user?.vendorName || 'Votre Entreprise'}</Text>
+            <Text style={styles.welcomeTitle}>{t('dash.subtitle')} 👋</Text>
+            <Text style={styles.subtitle}>{user?.vendorName || t('dash.yourCompany')}</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'transparent', gap: 15 }}>
             <TouchableOpacity style={styles.notifBtn} onPress={() => setShowNotifications(true)}>
@@ -203,30 +205,30 @@ export default function DashboardScreen() {
             <View style={[styles.iconBox, { backgroundColor: Colors.glass.orange }]}>
               <FontAwesome name="money" size={18} color={Colors.warning} />
             </View>
-            <Text style={styles.kpiLabel}>CA Total</Text>
+            <Text style={styles.kpiLabel}>{t('dash.totalRevenue')}</Text>
             <Text style={styles.kpiValue}>{fmtMoney(stats.totalRevenue)} <Text style={{fontSize:12, opacity:0.6}}>DT</Text></Text>
-            <Text style={[styles.kpiTrend, { color: Colors.warning }]}>Chiffre cumulé</Text>
+            <Text style={[styles.kpiTrend, { color: Colors.warning }]}>{t('dash.cumulativeRevenue')}</Text>
           </View>
 
           <View style={[styles.kpiCard, styles.glassCard, { borderLeftColor: Colors.secondary, borderLeftWidth: 4 }]}>
             <View style={[styles.iconBox, { backgroundColor: Colors.glass.blue }]}>
               <FontAwesome name="credit-card" size={18} color={Colors.secondary} />
             </View>
-            <Text style={styles.kpiLabel}>Wallet</Text>
+            <Text style={styles.kpiLabel}>{t('dash.wallet')}</Text>
             <Text style={[styles.kpiValue, { color: Colors.secondary }]}>{fmtMoney(stats.walletBalance)} <Text style={{fontSize:12, opacity:0.6}}>DT</Text></Text>
-            <Text style={[styles.kpiTrend, { color: Colors.secondary }]}>Solde disponible</Text>
+            <Text style={[styles.kpiTrend, { color: Colors.secondary }]}>{t('dash.availableBalance')}</Text>
           </View>
         </View>
 
         {/* ── SECTION: ANALYSE DÉTAILLÉE ───────────────────────── */}
         <View style={{ marginTop: 10, marginBottom: 20 }}>
-          <Text style={styles.sectionTitle}>Analyse de Performance</Text>
+          <Text style={styles.sectionTitle}>{t('dash.analytics')}</Text>
           
           <View style={[styles.profitBanner, { backgroundColor: 'rgba(34,172,56,0.05)', borderColor: 'rgba(34,172,56,0.15)' }]}>
             <View style={{ backgroundColor: 'transparent' }}>
-              <Text style={styles.profitLabel}>Volume des Ventes</Text>
+              <Text style={styles.profitLabel}>{t('dash.volumeVentes')}</Text>
               <Text style={[styles.profitValue, { color: Colors.success }]}>{fmtInt(stats.orderCount)}</Text>
-              <Text style={[styles.profitSub, { color: T.textMuted }]}>Commandes traitées sur le marché</Text>
+              <Text style={[styles.profitSub, { color: T.textMuted }]}>{t('dash.ordersProcessed')}</Text>
             </View>
             <FontAwesome name="line-chart" size={32} color={Colors.success} style={{ opacity: 0.5 }} />
           </View>
@@ -235,17 +237,17 @@ export default function DashboardScreen() {
               {stats.topClients?.length > 0 && (
                 <View style={[styles.analyticsCard, styles.glassCard]}>
                   <View style={styles.analyticsHeader}>
-                    <Text style={styles.analyticsTitle}>Meilleurs Clients (Magasins)</Text>
+                    <Text style={styles.analyticsTitle}>{t('dash.topClients')}</Text>
                   </View>
                   {stats.topClients.slice(0, 3).map((c: any, i: number) => (
                     <View key={i} style={[styles.rankRow, i === 2 && { borderBottomWidth: 0 }]}>
                       <Text style={styles.rankNum}>{i + 1}</Text>
                       <View style={{ flex: 1, backgroundColor: 'transparent' }}>
                         <Text style={styles.rankName}>{c.name}</Text>
-                        <Text style={styles.rankSub}>Total achats: {fmtMoney(c.total)} DT</Text>
+                        <Text style={styles.rankSub}>{t('dash.totalPurchases')} {fmtMoney(c.total)} DT</Text>
                       </View>
                       <View style={[styles.rankBadge, { backgroundColor: Colors.glass.blue }]}>
-                        <Text style={[styles.rankBadgeText, { color: Colors.secondary }]}>Top Client</Text>
+                        <Text style={[styles.rankBadgeText, { color: Colors.secondary }]}>{t('dash.topClient')}</Text>
                       </View>
                     </View>
                   ))}
@@ -263,10 +265,10 @@ export default function DashboardScreen() {
             <View style={[styles.iconBox, { backgroundColor: Colors.glass.blue }]}>
               <FontAwesome name="truck" size={18} color={Colors.secondary} />
             </View>
-            <Text style={styles.kpiLabel}>Commandes</Text>
+            <Text style={styles.kpiLabel}>{t('dash.orders')}</Text>
             <Text style={[styles.kpiValue, { color: Colors.secondary }]}>{fmtInt(stats.pendingOrders)}</Text>
             <View style={{flexDirection:'row', alignItems:'center', backgroundColor: 'transparent'}}>
-                <Text style={[styles.kpiTrend, { color: Colors.secondary, marginRight: 4 }]}>En attente</Text>
+                <Text style={[styles.kpiTrend, { color: Colors.secondary, marginRight: 4 }]}>{t('dash.pending')}</Text>
                 <FontAwesome name="chevron-right" size={10} color={Colors.secondary} />
             </View>
           </TouchableOpacity>
@@ -278,10 +280,10 @@ export default function DashboardScreen() {
             <View style={[styles.iconBox, { backgroundColor: Colors.glass.green }]}>
               <FontAwesome name="cubes" size={18} color={Colors.success} />
             </View>
-            <Text style={styles.kpiLabel}>Produits</Text>
+            <Text style={styles.kpiLabel}>{t('dash.products')}</Text>
             <Text style={[styles.kpiValue, { color: Colors.success }]}>{fmtInt(stats.activeProducts)}</Text>
             <View style={{flexDirection:'row', alignItems:'center', backgroundColor: 'transparent'}}>
-                <Text style={[styles.kpiTrend, { color: Colors.success, marginRight: 4 }]}>Gérer le stock</Text>
+                <Text style={[styles.kpiTrend, { color: Colors.success, marginRight: 4 }]}>{t('dash.manageStock')}</Text>
                 <FontAwesome name="chevron-right" size={10} color={Colors.success} />
             </View>
           </TouchableOpacity>
@@ -290,12 +292,12 @@ export default function DashboardScreen() {
         {/* Quick Access Row */}
         <View style={styles.qaRow}>
           {[
-            { icon: 'archive', label: 'Catalogue', route: '/(tabs)/catalogue', color: Colors.success },
-            { icon: 'shopping-cart', label: 'Ventes', route: '/(tabs)/ventes', color: Colors.secondary },
-            { icon: 'file-text', label: 'Devis', route: '/(tabs)/ventes', color: Colors.warning },
+            { icon: 'archive', label: t('dash.catalogue'), route: '/(tabs)/catalogue', color: Colors.success },
+            { icon: 'shopping-cart', label: t('dash.ventes'), route: '/(tabs)/ventes', color: Colors.secondary },
+            { icon: 'file-text', label: t('dash.devis'), route: '/(tabs)/ventes', color: Colors.warning },
             { icon: 'credit-card', label: 'Wallet', route: '/(tabs)/wallet', color: '#f472b6' },
-            { icon: 'cubes', label: 'Stock', route: '/(tabs)/catalogue', color: '#a78bfa' },
-            { icon: 'users', label: 'Profil', route: '/(tabs)/profile', color: '#64748b' },
+            { icon: 'cubes', label: t('dash.stock'), route: '/(tabs)/catalogue', color: '#a78bfa' },
+            { icon: 'users', label: t('dash.profil'), route: '/(tabs)/profile', color: '#64748b' },
           ].map((item, i) => (
             <TouchableOpacity key={i} style={styles.qaBtn} onPress={() => router.push(item.route as any)}>
               <View style={[styles.qaIconCircle, { backgroundColor: item.color + '22' }]}>
@@ -314,7 +316,7 @@ export default function DashboardScreen() {
         <View style={styles.modalOverlay}>
             <View style={styles.modalSheet}>
                 <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>Notifications</Text>
+                    <Text style={styles.modalTitle}>{t('dash.notifications')}</Text>
                     <TouchableOpacity onPress={() => setShowNotifications(false)}>
                         <FontAwesome name="times" size={20} color={T.white} />
                     </TouchableOpacity>
@@ -322,12 +324,12 @@ export default function DashboardScreen() {
                 {unreadCount > 0 && (
                     <TouchableOpacity style={styles.markAllReadBtn} onPress={handleMarkAllAsRead}>
                         <FontAwesome name="check-square-o" size={14} color={Colors.primary} />
-                        <Text style={styles.markAllReadText}>Tout marquer comme lu</Text>
+                        <Text style={styles.markAllReadText}>{t('dash.markAllRead')}</Text>
                     </TouchableOpacity>
                 )}
                 <ScrollView contentContainerStyle={{ padding: 20 }}>
                     {notifications.length === 0 ? (
-                        <Text style={{color: T.textMuted, textAlign: 'center', marginTop: 30}}>Aucune notification.</Text>
+                        <Text style={{color: T.textMuted, textAlign: 'center', marginTop: 30}}>{t('dash.noNotifications')}</Text>
                     ) : (
                         notifications.map((n, idx) => {
                             const isRead = readNotifIds.includes(n.id);

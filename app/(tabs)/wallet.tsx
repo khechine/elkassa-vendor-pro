@@ -7,6 +7,7 @@ import { AuthService } from '@/services/auth';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme, ThemeColors } from '@/components/useTheme';
+import { useT } from '@/constants/translations';
 
 export default function WalletScreen() {
   const T = useTheme();
@@ -20,6 +21,7 @@ export default function WalletScreen() {
   const [depositAmount, setDepositAmount] = useState('');
   const [depositProof, setDepositProof] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const t = useT();
 
   const fetchData = async (vid: string) => {
     try {
@@ -63,11 +65,11 @@ export default function WalletScreen() {
 
   const handleDepositSubmit = async () => {
     if (!depositAmount || isNaN(Number(depositAmount))) {
-      Alert.alert("Erreur", "Veuillez entrer un montant valide.");
+      Alert.alert(t('general.error'), t('wallet.invalidAmount'));
       return;
     }
     if (!depositProof) {
-      Alert.alert("Erreur", "Veuillez joindre une preuve de paiement (Reçu, Capture d'écran, etc.)");
+      Alert.alert(t('general.error'), t('wallet.proofRequired'));
       return;
     }
 
@@ -94,13 +96,13 @@ export default function WalletScreen() {
         proofImage: uploadResp.url
       });
 
-      Alert.alert("Succès", "Votre demande de dépôt a été transmise. Elle sera validée par l'administration après vérification.");
+      Alert.alert(t('general.success'), t('wallet.depositSubmitted'));
       setDepositModalOpen(false);
       setDepositAmount('');
       setDepositProof(null);
     } catch (e) {
       console.error(e);
-      Alert.alert("Erreur", "Impossible de soumettre la demande.");
+      Alert.alert(t('general.error'), t('wallet.submitFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -118,18 +120,18 @@ export default function WalletScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === 'android' ? insets.top + 20 : 60 }]}>
-      <Text style={styles.sectionTitle}>Espace Finance</Text>
+      <Text style={styles.sectionTitle}>{t('wallet.financeSection')}</Text>
 
       <ScrollView contentContainerStyle={styles.scrollBody} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.warning} />}>
         <View style={[styles.balanceCard, styles.glassCard]}>
-            <Text style={styles.balanceLabel}>Solde Disponible</Text>
+            <Text style={styles.balanceLabel}>{t('wallet.balance')}</Text>
             <Text style={styles.balanceValue}>{Number(wallet?.balance || 0).toFixed(3)} DT</Text>
             <TouchableOpacity style={styles.withdrawBtn} onPress={() => setDepositModalOpen(true)}>
-                <Text style={styles.withdrawBtnText}>Déposer de l'argent</Text>
+                <Text style={styles.withdrawBtnText}>{t('wallet.depositMoney')}</Text>
             </TouchableOpacity>
         </View>
 
-        <Text style={styles.subtitle}>Transactions Récentes</Text>
+        <Text style={styles.subtitle}>{t('wallet.recentTransactions')}</Text>
         {transactions.map((tx: any, idx: number) => (
           <View key={idx} style={[styles.transactionRow, styles.glassCard]}>
             <View style={[styles.iconBox, { backgroundColor: tx.amount > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }]}>
@@ -144,7 +146,7 @@ export default function WalletScreen() {
             </Text>
           </View>
         ))}
-        {transactions.length === 0 && <Text style={styles.emptyText}>Aucune transaction répertoriée.</Text>}
+        {transactions.length === 0 && <Text style={styles.emptyText}>{t('wallet.noTransactions')}</Text>}
         <View style={{ height: 100 }} />
       </ScrollView>
 
@@ -153,14 +155,14 @@ export default function WalletScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, styles.glassCard]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nouveau Dépôt</Text>
+              <Text style={styles.modalTitle}>{t('wallet.newDeposit')}</Text>
               <TouchableOpacity onPress={() => setDepositModalOpen(false)}>
                 <FontAwesome name="close" size={24} color={T.textMuted} />
               </TouchableOpacity>
             </View>
 
             <ScrollView>
-              <Text style={styles.inputLabel}>Montant à déposer (DT)</Text>
+              <Text style={styles.inputLabel}>{t('wallet.depositAmount')}</Text>
               <TextInput
                 style={styles.textInput}
                 placeholder="0.000"
@@ -170,17 +172,17 @@ export default function WalletScreen() {
                 onChangeText={setDepositAmount}
               />
 
-              <Text style={styles.inputLabel}>Preuve de paiement</Text>
+              <Text style={styles.inputLabel}>{t('wallet.depositProof')}</Text>
               <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
                 {depositProof ? (
                   <View style={{ position: 'relative' }}>
                     <FontAwesome name="check-circle" size={48} color="#10b981" />
-                    <Text style={{ color: T.white, marginTop: 10, fontSize: 12 }}>Preuve sélectionnée</Text>
+                    <Text style={{ color: T.white, marginTop: 10, fontSize: 12 }}>{t('wallet.selectProof')}</Text>
                   </View>
                 ) : (
                   <View style={{ alignItems: 'center' }}>
                     <FontAwesome name="camera" size={32} color={T.textMuted} />
-                    <Text style={{ color: T.textMuted, marginTop: 10 }}>Sélectionner une image</Text>
+                    <Text style={{ color: T.textMuted, marginTop: 10 }}>{t('wallet.selectImage')}</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -188,7 +190,7 @@ export default function WalletScreen() {
               <View style={styles.infoBox}>
                 <FontAwesome name="info-circle" size={16} color={Colors.warning} />
                 <Text style={styles.infoText}>
-                  Veuillez effectuer un virement ou un dépôt sur le compte de l'administration et joindre le reçu ici.
+                  {t('wallet.infoBox')}
                 </Text>
               </View>
 
@@ -200,7 +202,7 @@ export default function WalletScreen() {
                 {isSubmitting ? (
                   <ActivityIndicator color={T.white} />
                 ) : (
-                  <Text style={styles.submitBtnText}>Soumettre pour validation</Text>
+                  <Text style={styles.submitBtnText}>{t('wallet.submit')}</Text>
                 )}
               </TouchableOpacity>
             </ScrollView>
